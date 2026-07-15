@@ -1,2 +1,209 @@
-# rpg-translator-suite
-Open-source localization toolkit for RPG Maker and similar game engines.
+# RPG Translator Suite (RTS)
+
+> An open-source localization toolkit for RPG Maker and similar game engines.
+
+RPG Translator Suite (RTS) is a modular translation platform designed to simplify the localization of games built with RPG Maker and other supported engines.
+
+Instead of manually editing hundreds of files, RTS provides a complete workflow to extract, translate, validate, and rebuild localization projects while preserving the original game structure.
+
+---
+
+## Vision
+
+Become the standard open-source localization platform for RPG Maker and similar game engines.
+
+---
+
+## Goals
+
+- Support multiple RPG engines.
+- Preserve original project integrity.
+- Encourage community-made translation patches.
+- Provide professional localization workflows.
+- Offer an extensible plugin architecture.
+
+---
+
+# Supported Engines
+
+## Planned
+
+- RPG Maker XP
+- RPG Maker VX
+- RPG Maker VX Ace
+- RPG Maker MV
+- RPG Maker MZ
+
+### Future Support
+
+- Ren'Py
+- Wolf RPG Editor
+- TyranoBuilder
+- Visual Novel Maker
+- SRPG Studio
+
+---
+
+# Main Features
+
+- Automatic engine detection
+- Translation editor
+- SQLite translation database
+- Translation memory
+- Glossary management
+- AI-assisted translation (optional)
+- Validation tools
+- Patch generation
+- Patch installer
+- Plugin system
+
+---
+
+# Editions
+
+## RTS Community
+
+Designed for translators, modders and fan localization teams.
+
+Features:
+
+- Translation editor
+- Patch generation
+- Patch installer
+- Translation memory
+- Glossary
+- AI integration
+- Plugin support
+
+Community Edition distributes translation patches instead of original game files whenever possible.
+
+---
+
+## RTS Studio
+
+Designed for game developers and localization companies.
+
+Additional features include:
+
+- Full project export
+- Command-line interface (CLI)
+- REST API
+- CI/CD integration
+- Team management
+- Cloud synchronization
+- Enterprise support
+
+---
+
+# Project Status
+
+Current Version
+
+```
+Pre-Alpha
+```
+
+Current Development Stage
+
+```
+Planning & Architecture
+```
+
+---
+
+# Roadmap
+
+Current milestone:
+
+- Project architecture
+- Plugin system
+- Engine detection
+- RPG Maker MV support
+
+See:
+
+- docs/ROADMAP.md
+
+---
+
+# Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Language | Python 3.12+ |
+| GUI | PySide6 |
+| Database | SQLite |
+| Testing | pytest |
+| Packaging | PyInstaller |
+
+---
+
+# Project Structure
+
+```
+rpg-translator-suite/
+
+app/
+core/
+plugins/
+gui/
+database/
+translation/
+validation/
+patcher/
+
+docs/
+tests/
+examples/
+resources/
+```
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Please read:
+
+```
+CONTRIBUTING.md
+```
+
+before opening an Issue or Pull Request.
+
+---
+
+# License
+
+This project is licensed under the MPL 2.0 License.
+
+See:
+
+```
+LICENSE
+```
+
+---
+
+# Philosophy
+
+RTS aims to support game localization while respecting original game distribution.
+
+Whenever possible, the Community Edition encourages the creation and distribution of translation patches instead of redistributing copyrighted game assets.
+
+---
+
+# Author
+
+Created and maintained by **Noobzin14**.
+
+GitHub:
+
+https://github.com/Noobzin14
+
+---
+
+# Future
+
+The long-term goal is to make RTS a complete localization platform capable of supporting dozens of game engines through a modular plugin architecture.
