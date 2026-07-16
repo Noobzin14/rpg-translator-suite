@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rpg-translator-suite"
+version = "0.1.0"
+description = "A modular localization toolkit for RPG Maker and similar game engines."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MPL-2.0" }
+authors = [{ name = "Noobzin14" }]
+dependencies = [
+    "PySide6>=6.7,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+]
+
+[project.scripts]
+rts = "main:main"
+
+[tool.setuptools]
+packages = ["app", "app.core", "app.gui", "plugins"]
+py-modules = ["main"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
