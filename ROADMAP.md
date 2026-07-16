@@ -1,71 +1,105 @@
-# ROADMAP.md
-
 # RPG Translator Suite (RTS)
+## Roadmap
 
-> Plataforma open source para tradução de jogos RPG Maker e engines similares.
-
-Status: Planejamento
-
----
-
-# Visão
-
-Criar uma ferramenta moderna para tradução de jogos que permita:
-
-- extrair textos;
-- traduzir;
-- validar;
-- reimportar;
-- gerar patches;
-- preservar completamente a estrutura do jogo.
-
-O objetivo é se tornar uma referência para tradução de RPG Maker.
+> **Version:** 0.2 (Planning)  
+> **Status:** Active Development
 
 ---
 
-# Filosofia
+# Vision
 
-- Arquitetura baseada em plugins
-- Engine independente
-- Interface moderna (Qt/PySide6)
-- Código aberto
-- Extensível
-- Seguro
-- Modular
+RPG Translator Suite (RTS) aims to become a professional, modular and extensible localization platform capable of supporting multiple game engines through a unified plugin architecture.
+
+The project is developed incrementally, with each Sprint delivering a stable and reviewable milestone.
 
 ---
 
-# Roadmap
+# Roadmap Status
 
-## Sprint 0.1 — Fundação
-
-### Objetivos
-
-Criar toda a infraestrutura da aplicação.
-
-### Recursos
-
-- Estrutura do projeto
-- ConfigManager
-- Logging
-- PluginManager
-- Sistema de configurações
-- Janela principal
-- Arquitetura desacoplada
-
-Status
-
-- ✅ Concluído
+| Status | Meaning |
+|---------|---------|
+| ⚪ Planned | Not started |
+| 🟡 In Progress | Currently under development |
+| 🟢 Completed | Finished |
+| 🔴 Blocked | Waiting for dependency |
 
 ---
 
-## Sprint 0.2 — Detecção de Engine
+# Phase 1 — Foundation
 
-### Objetivos
+Establish the technical foundation of RTS.
 
-Reconhecer automaticamente o tipo de projeto.
+---
 
-Suporte
+## Sprint 0.1 — Core Foundation
+
+**Status:** 🟡 In Progress
+
+### Goal
+
+Build a clean and maintainable application foundation without implementing translation features.
+
+### Tasks
+
+- 🟢 Project structure
+- 🟢 Python project configuration
+- 🟢 `main.py`
+- 🟢 Application bootstrap
+- 🟢 ConfigManager
+- 🟢 Logger
+- 🟢 BasePlugin
+- 🟢 PluginManager
+- 🟢 MainWindow (minimal)
+- 🟢 Initial unit tests
+
+### Remaining
+
+- ⚪ PluginRegistry
+- ⚪ PluginLoader
+- ⚪ PluginState
+- ⚪ Event System
+- ⚪ Exception hierarchy
+- ⚪ Constants module
+- ⚪ Version module
+- ⚪ Improve BasePlugin (ABC)
+- ⚪ Architectural review
+- ⚪ Increase test coverage
+
+### Deliverable
+
+**Milestone**
+
+```
+v0.1.0-alpha
+```
+
+Capabilities:
+
+- Application starts successfully.
+- Core initializes.
+- GUI opens.
+- Plugins can be registered.
+- Foundation ready for engine detection.
+
+---
+
+## Sprint 0.2 — Engine Detection
+
+**Status:** ⚪ Planned
+
+### Goal
+
+Automatically identify supported game engines.
+
+### Tasks
+
+- Plugin discovery
+- Plugin loading
+- Engine detection pipeline
+- Project validation
+- Engine information screen
+
+Supported engines:
 
 - RPG Maker XP
 - RPG Maker VX
@@ -73,163 +107,213 @@ Suporte
 - RPG Maker MV
 - RPG Maker MZ
 
-Recursos
+### Deliverable
 
-- Detectar versão
-- Detectar idioma
-- Validar estrutura
-- Abrir projeto
+The application identifies the project engine and version without modifying any files.
 
 ---
 
-## Sprint 0.3 — Extração
+## Sprint 0.3 — Project Loading
 
-Extrair todos os textos possíveis.
+**Status:** ⚪ Planned
 
-MV/MZ
+### Goal
 
+Open projects safely.
+
+### Tasks
+
+- Project model
+- Metadata loading
+- File validation
+- Read-only project loading
+- Navigation tree
+
+### Deliverable
+
+Projects can be opened and inspected.
+
+---
+
+# Phase 2 — Translation Engine
+
+Build the translation workflow.
+
+---
+
+## Sprint 0.4 — Text Extraction
+
+**Status:** ⚪ Planned
+
+### Tasks
+
+- JSON extraction
+- Maps
+- Events
 - Actors
 - Classes
-- Skills
 - Items
 - Weapons
 - Armors
+- Skills
 - Enemies
 - Troops
-- States
-- Animations
-- CommonEvents
-- System
-- Todos os MapXXX.json
+- Common Events
 
-XP/VX/VXA
+### Deliverable
 
-- Scripts
-- MapInfos
-- Mapas
-- Banco de dados
+All translatable text is extracted.
 
 ---
 
-## Sprint 0.4 — Banco de Tradução
+## Sprint 0.5 — Database
 
-SQLite.
+**Status:** ⚪ Planned
 
-Tabela principal
+### Tasks
 
-- ID
-- Engine
-- Arquivo
-- Mapa
-- Evento
-- Original
-- Tradução
-- Status
-- Revisor
-- Comentários
+- SQLite integration
+- Translation database
+- Project storage
+- Translation Memory
+- Glossary
+- Search indexes
 
----
+### Deliverable
 
-## Sprint 0.5 — Editor
-
-Editor semelhante ao Poedit.
-
-Recursos
-
-- Pesquisa
-- Filtros
-- Histórico
-- Undo / Redo
-- Navegação rápida
-- Comparação
-- Destaque de variáveis
+Translation data is stored locally.
 
 ---
 
-## Sprint 0.6 — Glossário
+## Sprint 0.6 — Translation Editor
 
-Banco de termos.
+**Status:** ⚪ Planned
 
-Exemplo
+### Tasks
 
-Quest → Missão
+- Translation editor
+- Search
+- Replace
+- Filters
+- Context panel
+- Autosave
+- Progress tracking
 
-Dragonic → Dracônico
+### Deliverable
 
-Save → Salvar
-
-Sempre sugerir traduções consistentes.
-
----
-
-## Sprint 0.7 — Memória de Tradução
-
-Quando uma frase já foi traduzida.
-
-Exemplo
-
-Potion
-
-↓
-
-Poção
-
-Nova ocorrência
-
-↓
-
-Sugestão automática.
+Users can translate projects through the editor.
 
 ---
 
-## Sprint 0.8 — IA
+## Sprint 0.7 — Validation
 
-Suporte opcional
+**Status:** ⚪ Planned
+
+### Tasks
+
+- Escape codes
+- Variables
+- JSON validation
+- Overflow detection
+- Missing translations
+- Validation report
+
+### Deliverable
+
+Projects can be validated before export.
+
+---
+
+## Sprint 0.8 — Patch System
+
+**Status:** ⚪ Planned
+
+### Tasks
+
+- Patch Builder
+- Patch Installer
+- Patch Verification
+- Backup creation
+
+### Deliverable
+
+Translation patches can be generated and applied safely.
+
+---
+
+# Phase 3 — Community Edition
+
+Release the first public version.
+
+---
+
+## Sprint 1.0
+
+**Status:** ⚪ Planned
+
+### Features
+
+- Stable translation workflow
+- Plugin support
+- Translation Memory
+- Glossary
+- Validation
+- Patch Builder
+- Automatic updates
+- Settings
+- Theme support
+
+### Deliverable
+
+```
+RTS Community 1.0
+```
+
+---
+
+# Phase 4 — Studio Edition
+
+Professional localization tools.
+
+**Status:** ⚪ Planned
+
+### Planned Features
+
+- Full project export
+- CLI
+- REST API
+- Team collaboration
+- Cloud synchronization
+- Enterprise licensing
+- Build automation
+- CI/CD integration
+
+---
+
+# Phase 5 — AI Integration
+
+**Status:** ⚪ Planned
+
+### Planned Features
 
 - OpenAI
-- Gemini
 - Claude
+- Gemini
 - Ollama
 - LM Studio
-
-A IA deverá preservar automaticamente
-
-- \V[]
-- \N[]
-- \I[]
-- \C[]
-- Tags
-- Escape codes
+- Translation suggestions
+- Context-aware translation
+- Protected variable handling
 
 ---
 
-## Sprint 0.9 — Reimportação
+# Phase 6 — Multi-Engine Expansion
 
-Gerar novamente
+**Status:** ⚪ Planned
 
-- JSON
-- RXDATA
-- RVData
-- RVData2
+### Planned Engines
 
-Sem corromper eventos.
-
----
-
-## Sprint 1.0 — Primeira versão pública
-
-Recursos
-
-- Editor
-- Extração
-- Importação
-- Patch
-- IA
-- Glossário
-- Memória
-- Backup automático
-
-Suporte
+### RPG Maker
 
 - XP
 - VX
@@ -237,222 +321,73 @@ Suporte
 - MV
 - MZ
 
----
+### Visual Novel
 
-# Pós 1.0
+- Ren'Py
+- TyranoBuilder
+- Visual Novel Maker
 
-## v1.1
+### RPG Engines
 
-Comparador de versões
+- Wolf RPG Editor
+- SRPG Studio
 
-Exemplo
+### Future
 
-v1.25
-
-↓
-
-v1.26
-
-↓
-
-132 textos novos
+- Godot localization
+- Unity localization
+- Unreal localization
 
 ---
 
-## v1.2
+# Long-Term Goals
 
-Gerador de Patch
-
-Produzir
-
-arquivo.rtpatch
-
-Contendo apenas diferenças.
-
-Nunca distribuir arquivos originais.
-
----
-
-## v1.3
-
-Instalador
-
-Selecionar jogo
-
-↓
-
-Selecionar patch
-
-↓
-
-Aplicar tradução
+- Universal plugin architecture
+- Marketplace for plugins
+- Collaborative translation
+- Cloud projects
+- OCR support
+- Image localization
+- Subtitle localization
+- Voice localization
+- Translation analytics
+- Package manager
+- Public SDK
 
 ---
 
-## v1.4
+# Release Strategy
 
-Validador
-
-Verificar
-
-- JSON inválido
-- Variáveis
-- Escape Codes
-- Eventos
-- Overflow
-- Tags
-- Quebra de comandos
-
----
-
-## v1.5
-
-Comparação Visual
-
-Mostrar
-
-Original
-
-↓
-
-Traduzido
-
-↓
-
-Diferenças
+| Version | Objective |
+|----------|-----------|
+| v0.1.0-alpha | Foundation |
+| v0.2.0-alpha | Engine Detection |
+| v0.3.0-alpha | Project Loading |
+| v0.4.0-alpha | Text Extraction |
+| v0.5.0-alpha | Database |
+| v0.6.0-alpha | Translation Editor |
+| v0.7.0-alpha | Validation |
+| v0.8.0-alpha | Patch System |
+| v1.0.0 | Community Edition |
 
 ---
 
-## v2.0
+# Development Principles
 
-Editor Visual
-
-Ao clicar em um diálogo.
-
-Mostrar
-
-- mapa
-- evento
-- posição
-- NPC
-- face
-- imagem
-- contexto
+- One sprint at a time.
+- One major feature per sprint.
+- Core remains engine-independent.
+- Every engine is implemented as a plugin.
+- Documentation evolves alongside the code.
+- Maintain high test coverage.
+- Prefer maintainability over rapid feature growth.
 
 ---
 
-## v2.5
+# Current Sprint
 
-Colaboração
+🟡 **Sprint 0.1 — Core Foundation**
 
-- múltiplos tradutores
-- revisão
-- comentários
-- histórico
-- merge
+Current objective:
 
----
-
-## v3.0
-
-IA Contextual
-
-A IA deverá compreender
-
-- personagem
-- mapa
-- missão
-- evento
-- sexo
-- emoção
-- contexto
-
-Para produzir traduções muito mais naturais.
-
----
-
-# Community Edition
-
-Recursos
-
-- Tradução
-- Patch
-- Glossário
-- IA
-- Memória
-- Plugins
-
-Sem
-
-- Exportação comercial
-- API
-- CI/CD
-
----
-
-# Studio Edition
-
-Inclui tudo da Community
-
-Mais
-
-- Exportação completa
-- CLI
-- API
-- Git
-- GitHub
-- GitLab
-- Azure DevOps
-- Build automático
-- QA
-- Cloud
-- Gestão de equipe
-
----
-
-# Estrutura
-
-rpg-translator-suite/
-
-├── app/
-│   ├── core/
-│   ├── gui/
-│   ├── database/
-│   ├── translation/
-│   ├── validation/
-│   ├── patcher/
-│   └── plugins/
-│
-├── plugins/
-│   ├── rpgmaker_xp/
-│   ├── rpgmaker_vx/
-│   ├── rpgmaker_vxace/
-│   ├── rpgmaker_mv/
-│   ├── rpgmaker_mz/
-│   └── renpy/
-│
-├── docs/
-├── tests/
-├── resources/
-└── examples/
-
----
-
-# Tecnologias
-
-| Camada | Tecnologia |
-|---------|------------|
-| Linguagem | Python 3.12+ |
-| Interface | PySide6 |
-| Banco | SQLite |
-| Plugins | Python |
-| Configuração | JSON |
-| Testes | pytest |
-| Empacotamento | PyInstaller |
-| Versionamento | Git |
-
----
-
-# Objetivo Final
-
-Construir uma plataforma capaz de traduzir jogos de diversas engines mantendo a integridade do projeto, oferecendo uma experiência moderna para tradutores independentes e também recursos avançados para estúdios profissionais.
+Finish the architectural foundation, review the implementation, strengthen the plugin infrastructure and prepare the project for engine detection in Sprint 0.2.
