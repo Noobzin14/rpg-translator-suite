@@ -1,0 +1,175 @@
+# CORE API
+## RPG Translator Suite (RTS)
+
+Version: 0.1 (Draft)
+
+---
+
+# Purpose
+
+The Core is the central component of RPG Translator Suite.
+
+It coordinates every subsystem while remaining completely independent from any specific game engine.
+
+The Core never reads or writes engine-specific files directly.
+
+All engine operations are delegated to plugins.
+
+---
+
+# Core Responsibilities
+
+The Core is responsible for:
+
+- Project lifecycle
+- Plugin management
+- Translation workflow
+- Event dispatching
+- Database access
+- Configuration
+- Logging
+- Autosave
+- Validation orchestration
+- Patch orchestration
+
+The Core MUST NOT contain engine-specific logic.
+
+---
+
+# Core Architecture
+
+```
+                    GUI
+                     │
+                     │
+              Core Controller
+                     │
+ ┌───────────────────┼────────────────────┐
+ │                   │                    │
+ │                   │                    │
+Plugin Manager   Database Manager   Event Manager
+ │                   │                    │
+ │                   │                    │
+Plugin API      SQLite Database      Event Bus
+```
+
+---
+
+# Main Modules
+
+```
+core/
+
+application.py
+
+project_manager.py
+
+plugin_manager.py
+
+database_manager.py
+
+event_manager.py
+
+translation_manager.py
+
+validation_manager.py
+
+patch_manager.py
+
+configuration.py
+
+logger.py
+
+exceptions.py
+```
+
+---
+
+# Application Lifecycle
+
+```
+Application Start
+
+↓
+
+Load Settings
+
+↓
+
+Initialize Logger
+
+↓
+
+Initialize Event Manager
+
+↓
+
+Initialize Database
+
+↓
+
+Load Plugins
+
+↓
+
+Initialize GUI
+
+↓
+
+Ready
+```
+
+---
+
+# Project Lifecycle
+
+```
+Open Project
+
+↓
+
+Detect Engine
+
+↓
+
+Load Plugin
+
+↓
+
+Read Metadata
+
+↓
+
+Extract Data
+
+↓
+
+Store Database
+
+↓
+
+Open Editor
+```
+
+---
+
+# Translation Workflow
+
+```
+Open Entry
+
+↓
+
+Edit Translation
+
+↓
+
+Validate
+
+↓
+
+Autosave
+
+↓
+
+Update Translation Memory
