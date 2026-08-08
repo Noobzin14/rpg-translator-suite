@@ -122,7 +122,28 @@ Current milestone:
 
 See:
 
-- docs/ROADMAP.md
+- ROADMAP.md
+
+---
+
+
+# Project Documentation
+
+## General Documents
+
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [License](LICENSE)
+
+## Technical Documents
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Core API](docs/CORE_API.md)
+- [Plugin API](docs/PLUGIN_API.md)
+- [Database](docs/DATABASE.md)
+- [UI/UX](docs/UI_UX.md)
 
 ---
 

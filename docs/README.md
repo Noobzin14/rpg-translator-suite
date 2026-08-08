@@ -1,5 +1,15 @@
-# RPG Translator Suite Documentation
+# RPG Translator Suite Technical Documentation
 
-This directory stores project documentation for architecture, contribution, and future feature specifications.
+This directory stores technical documentation for RPG Translator Suite (RTS).
 
-Sprint 0.1 establishes the documentation directory structure only. Feature-specific documentation should be added alongside the feature implementation that requires it.
+## Documents
+
+- [Architecture](ARCHITECTURE.md)
+- [Core API](CORE_API.md)
+- [Plugin API](PLUGIN_API.md)
+- [Database](DATABASE.md)
+- [UI/UX](UI_UX.md)
+
+General project documents remain in the repository root, including [README](../README.md), [Roadmap](../ROADMAP.md), [Changelog](../CHANGELOG.md), [Contributing Guide](../CONTRIBUTING.md), and [Code of Conduct](../CODE_OF_CONDUCT.md).
+
+Images and diagrams for technical documentation belong in [images](images/).
