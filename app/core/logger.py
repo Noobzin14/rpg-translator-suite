@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from app.core.constants import LOG_FILE_NAME
 
 DEFAULT_LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 
@@ -21,7 +22,7 @@ def configure_logging(log_directory: Path, level: int = logging.INFO) -> None:
         level=level,
         format=DEFAULT_LOG_FORMAT,
         handlers=[
-            logging.FileHandler(log_directory / "rts.log", encoding="utf-8"),
+            logging.FileHandler(log_directory / LOG_FILE_NAME, encoding="utf-8"),
             logging.StreamHandler(),
         ],
         force=True,

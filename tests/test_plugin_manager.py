@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 from app.core.base_plugin import BasePlugin
+from app.core.exceptions import PluginRegistrationError
 from app.core.plugin_manager import PluginManager
+from app.core.plugin_state import PluginState
 
 
 class DummyPlugin(BasePlugin):
@@ -27,6 +29,8 @@ def test_plugin_manager_registers_plugin() -> None:
     manager.register(plugin)
 
     assert manager.all_plugins() == (plugin,)
+    assert manager.get("dummy") is plugin
+    assert manager.state_of("dummy") is PluginState.REGISTERED
 
 
 def test_plugin_manager_rejects_duplicate_plugin_ids() -> None:
@@ -34,5 +38,5 @@ def test_plugin_manager_rejects_duplicate_plugin_ids() -> None:
     manager = PluginManager(plugin_directory=Path("plugins"))
     manager.register(DummyPlugin())
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PluginRegistrationError):
         manager.register(DummyPlugin())
