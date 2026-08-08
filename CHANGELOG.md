@@ -61,15 +61,15 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 #### Documentation
 
-- README
-- ROADMAP
-- ARCHITECTURE
-- CONTRIBUTING
-- AGENTS
-- CORE_API
-- DATABASE
-- PLUGIN_API
-- UI_UX
+- README.md
+- ROADMAP.md
+- docs/ARCHITECTURE.md
+- CONTRIBUTING.md
+- AGENTS.md
+- docs/CORE_API.md
+- docs/DATABASE.md
+- docs/PLUGIN_API.md
+- docs/UI_UX.md
 
 ### Changed
 
