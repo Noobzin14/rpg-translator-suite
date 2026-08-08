@@ -20,7 +20,7 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 # Version History
 
-## [0.1.0-alpha] - In Development
+## [0.1.0-alpha] - 2026-08-08
 
 ### Added
 
@@ -35,20 +35,27 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 #### Core
 
+- Core application foundation.
 - Application bootstrap layer.
 - ConfigManager.
 - Logger.
-- BasePlugin.
-- PluginManager.
+- RTS exception hierarchy.
+- Centralized application versioning.
 
 #### GUI
 
+- Initial PySide6 GUI.
 - Initial Main Window.
 - "Open Project" home screen.
 
 #### Plugins
 
 - Plugin namespace.
+- BasePlugin.
+- PluginRegistry.
+- PluginManager.
+- PluginLoader foundation.
+- PluginState.
 - Plugin registration.
 - Plugin validation.
 - Duplicate plugin protection.
@@ -58,6 +65,14 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 - Initial unit tests.
 - ConfigManager tests.
 - PluginManager tests.
+- PluginRegistry tests.
+- PluginLoader tests.
+
+#### Validation
+
+- `pytest -q`: 9 passed.
+- `python -m compileall app tests`: passed.
+- Core imports verified successfully.
 
 #### Documentation
 
@@ -73,6 +88,7 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 ### Changed
 
+- Sprint 0.1 marked as completed.
 - Roadmap reorganized into Phases and Sprints.
 - Foundation architecture refined after technical review.
 
