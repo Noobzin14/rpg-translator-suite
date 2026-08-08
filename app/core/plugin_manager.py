@@ -1,53 +1,58 @@
-"""Plugin registration service for RPG Translator Suite."""
+"""Plugin coordination service for RPG Translator Suite."""
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 
 from app.core.base_plugin import BasePlugin
-
-LOGGER = logging.getLogger(__name__)
+from app.core.plugin_loader import PluginLoader
+from app.core.plugin_registry import PluginRegistry
+from app.core.plugin_state import PluginState
 
 
 class PluginManager:
-    """Maintains the collection of registered engine plugins."""
+    """Coordinates plugin registration and loading boundaries."""
 
-    def __init__(self, plugin_directory: Path) -> None:
+    def __init__(
+        self,
+        plugin_directory: Path,
+        registry: PluginRegistry | None = None,
+        loader: PluginLoader | None = None,
+    ) -> None:
         """Initialize the plugin manager.
 
         Args:
             plugin_directory: Directory reserved for engine plugin packages.
+            registry: Optional plugin registry used for storage and queries.
+            loader: Optional plugin loader used for loading infrastructure.
         """
-        self._plugin_directory = plugin_directory
-        self._plugins: dict[str, BasePlugin] = {}
+        self._registry = registry or PluginRegistry()
+        self._loader = loader or PluginLoader(
+            plugin_directory=plugin_directory,
+            registry=self._registry,
+        )
 
     @property
     def plugin_directory(self) -> Path:
         """Return the directory reserved for plugins."""
-        return self._plugin_directory
+        return self._loader.plugin_directory
 
     def ensure_plugin_directory(self) -> None:
         """Create the plugin directory when it does not exist."""
-        self._plugin_directory.mkdir(parents=True, exist_ok=True)
+        self._loader.ensure_plugin_directory()
 
     def register(self, plugin: BasePlugin) -> None:
-        """Register a plugin instance.
+        """Register a plugin instance through the registry."""
+        self._registry.register(plugin)
 
-        Args:
-            plugin: Plugin instance implementing the base plugin interface.
-
-        Raises:
-            ValueError: If another plugin with the same identifier exists.
-        """
-        if plugin.plugin_id in self._plugins:
-            message = f"Plugin already registered: {plugin.plugin_id}"
-            LOGGER.error(message)
-            raise ValueError(message)
-
-        self._plugins[plugin.plugin_id] = plugin
-        LOGGER.info("Plugin registered: %s", plugin.plugin_id)
+    def get(self, plugin_id: str) -> BasePlugin | None:
+        """Return a registered plugin by identifier, if present."""
+        return self._registry.get(plugin_id)
 
     def all_plugins(self) -> tuple[BasePlugin, ...]:
         """Return all registered plugins."""
-        return tuple(self._plugins.values())
+        return self._registry.all_plugins()
+
+    def state_of(self, plugin_id: str) -> PluginState | None:
+        """Return the lifecycle state for a registered plugin."""
+        return self._registry.state_of(plugin_id)

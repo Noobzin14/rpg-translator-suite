@@ -45,3 +45,11 @@ class ConfigManager:
             value: Value to store.
         """
         self._values[key] = value
+
+    def remove(self, key: str) -> None:
+        """Remove a configuration value when it exists."""
+        self._values.pop(key, None)
+
+    def contains(self, key: str) -> bool:
+        """Return whether a configuration key is configured."""
+        return key in self._values
