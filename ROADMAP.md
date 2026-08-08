@@ -33,7 +33,7 @@ Establish the technical foundation of RTS.
 
 ## Sprint 0.1 — Core Foundation
 
-**Status:** 🟡 In Progress
+**Status:** 🟢 Completed
 
 ### Goal
 
@@ -54,16 +54,19 @@ Build a clean and maintainable application foundation without implementing trans
 
 ### Remaining
 
-- ⚪ PluginRegistry
-- ⚪ PluginLoader
-- ⚪ PluginState
 - ⚪ Event System
-- ⚪ Exception hierarchy
-- ⚪ Constants module
-- ⚪ Version module
-- ⚪ Improve BasePlugin (ABC)
-- ⚪ Architectural review
-- ⚪ Increase test coverage
+
+### Completed During Architectural Review
+
+- 🟢 PluginRegistry
+- 🟢 PluginLoader foundation
+- 🟢 PluginState
+- 🟢 Exception hierarchy
+- 🟢 Constants module
+- 🟢 Version module
+- 🟢 Improve BasePlugin (ABC)
+- 🟢 Architectural review
+- 🟢 Increase test coverage
 
 ### Deliverable
 
