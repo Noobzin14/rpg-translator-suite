@@ -1,7 +1,7 @@
 # RPG Translator Suite (RTS)
 ## Roadmap
 
-> **Version:** 0.2 (Planning)  
+> **Version:** 0.2 (Completed)  
 > **Status:** Active Development
 
 ---
@@ -88,7 +88,7 @@ Capabilities:
 
 ## Sprint 0.2 — Engine Detection
 
-**Status:** ⚪ Planned
+**Status:** 🟢 Completed
 
 ### Goal
 
@@ -96,19 +96,23 @@ Automatically identify supported game engines.
 
 ### Tasks
 
-- Plugin discovery
-- Plugin loading
-- Engine detection pipeline
-- Project validation
-- Engine information screen
+- 🟢 Plugin discovery
+- 🟢 Plugin loading
+- 🟢 Structured engine detection pipeline
+- 🟢 Read-only project validation for detection
+- 🟢 DetectionResult model
+- 🟢 ProjectDetector Core entry point
+- 🟢 Explicit UNKNOWN / INCOMPLETE / DETECTED / CONFLICT handling
+- 🟢 Compatibility handling for legacy `detect()`
+- ⚪ Engine information screen
 
 Supported engines:
 
-- RPG Maker XP
-- RPG Maker VX
-- RPG Maker VX Ace
-- RPG Maker MV
-- RPG Maker MZ
+- ⚪ RPG Maker XP
+- ⚪ RPG Maker VX
+- ⚪ RPG Maker VX Ace
+- 🟢 RPG Maker MV
+- ⚪ RPG Maker MZ
 
 ### Deliverable
 
