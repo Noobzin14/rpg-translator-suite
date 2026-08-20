@@ -257,7 +257,28 @@ Capabilities
 
 # Engine Detection
 
-The Core scans the project.
+The Core orchestrates detection but does not contain engine-specific rules.
+
+Sprint 0.2 detection flow:
+
+```
+ProjectDetector
+↓
+PluginLoader
+↓
+Engine detection plugins
+↓
+DetectionResult
+```
+
+`ProjectDetector` validates the selected folder, asks loaded plugins to inspect
+the project in read-only mode, and consolidates the result. Engine-specific
+evidence, such as RPG Maker MV runtime files, belongs inside the relevant plugin
+under `plugins/`.
+
+Detection can explicitly return detected, unknown, invalid path, incomplete, or
+conflict states. Conflicts preserve the competing plugin results instead of
+choosing silently.
 
 Each plugin decides if it supports it.
 

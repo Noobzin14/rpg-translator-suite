@@ -117,6 +117,17 @@ or
 False
 ```
 
+Sprint 0.2 also supports the structured detection method:
+
+```python
+def detect_project(path) -> DetectionResult:
+    pass
+```
+
+Plugins should return evidence-backed `DetectionResult` objects. Detection must
+be read-only and must never execute scripts from the inspected project. Boolean
+`detect()` remains available as a compatibility adapter.
+
 ---
 
 # Open Project

@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import ClassVar
 
+from app.core.detection import DetectionResult, DetectionStatus
+
 
 class BasePlugin(ABC):
     """Base class for all engine plugins.
@@ -25,3 +27,23 @@ class BasePlugin(ABC):
         Args:
             project_path: Candidate project directory.
         """
+
+    def detect_project(self, project_path: Path) -> DetectionResult:
+        """Return a structured engine detection result.
+
+        Plugins may override this method to provide rich evidence. The default
+        adapter preserves the Sprint 0.1 boolean detection contract.
+        """
+        if self.detect(project_path):
+            return DetectionResult(
+                status=DetectionStatus.DETECTED,
+                project_path=project_path,
+                engine=self.plugin_id,
+                display_name=self.display_name,
+            )
+
+        return DetectionResult(
+            status=DetectionStatus.UNKNOWN,
+            project_path=project_path,
+            reason=f"{self.display_name} did not recognize this project.",
+        )

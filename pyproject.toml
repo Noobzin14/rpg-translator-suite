@@ -26,7 +26,7 @@ rts = "main:main"
 version = { attr = "app.core.version.__version__" }
 
 [tool.setuptools]
-packages = ["app", "app.core", "app.gui", "plugins"]
+packages = ["app", "app.core", "app.gui", "plugins", "plugins.rpgmaker_mv"]
 py-modules = ["main"]
 
 [tool.pytest.ini_options]
