@@ -8,25 +8,6 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 ## [Unreleased]
 
-### Added
-
-- Sprint 0.2 engine detection models and project detection pipeline.
-- RPG Maker MV read-only detection plugin with version evidence support.
-- Unit tests for valid, unknown, incomplete, conflict, and invalid detection cases.
-- Ongoing improvements under the current sprint.
-- Internal architectural refinements.
-- Documentation updates.
-- Unit tests.
-- Plugin infrastructure improvements.
-
-### Fixed
-
-- Clarified Sprint 0.2 detection semantics so legacy boolean `detect()` matches
-  become low-confidence incomplete results instead of unevidenced confirmed
-  detections.
-- Preserved incomplete plugin detection results in the Core project detection
-  flow instead of collapsing them to unknown.
-
 ---
 
 # Version History
@@ -109,25 +90,25 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 ---
 
-## [0.2.0-alpha] - Planned
+## [0.2.0-alpha] - 2026-08-20
 
-### Planned
+### Added
 
 #### Engine Detection
 
-- Plugin discovery.
-- Plugin loading.
-- RPG Maker detection.
-- Engine version detection.
-- Project validation.
+- Structured engine detection pipeline.
+- `DetectionResult` for evidence-backed detection outcomes.
+- `ProjectDetector` Core entry point for project engine detection.
+- RPG Maker MV read-only detection.
+- Explicit UNKNOWN / INCOMPLETE / DETECTED / CONFLICT handling.
+- Compatibility handling for legacy boolean `detect()`.
+- Tests and validation for detection success, unknown, incomplete, conflict,
+  invalid path, and plugin failure scenarios.
 
-Supported engines:
+### Validation
 
-- RPG Maker XP
-- RPG Maker VX
-- RPG Maker VX Ace
-- RPG Maker MV
-- RPG Maker MZ
+- `pytest -q`: 24 passed.
+- `python -m compileall app tests plugins`: passed.
 
 ---
 
