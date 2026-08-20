@@ -126,7 +126,11 @@ def detect_project(path) -> DetectionResult:
 
 Plugins should return evidence-backed `DetectionResult` objects. Detection must
 be read-only and must never execute scripts from the inspected project. Boolean
-`detect()` remains available as a compatibility adapter.
+`detect()` remains available as a compatibility adapter only: if a plugin does
+not override `detect_project()`, a legacy `detect()` result of `True` is reported
+as low-confidence `incomplete` with explicit legacy evidence instead of
+`detected`. This preserves the Sprint 0.1 method without treating an unevidenced
+boolean as equivalent to structured engine confirmation.
 
 ---
 

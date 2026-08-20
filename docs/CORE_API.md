@@ -198,5 +198,18 @@ directory, calls plugins through `PluginLoader`, and returns a structured
 Possible statuses are `detected`, `unknown`, `conflict`, `invalid_path`, and
 `incomplete`.
 
+Status semantics:
+
+- `detected`: exactly one plugin confirmed an engine through structured detection.
+- `unknown`: no plugin found enough evidence for a supported engine.
+- `incomplete`: at least one plugin found partial evidence, but no plugin
+  confirmed a complete project.
+- `conflict`: more than one plugin returned structured `detected` results.
+- `invalid_path`: the candidate path does not exist or is not a directory.
+
+Legacy boolean `detect()` matches are compatibility signals only. The default
+adapter reports `True` as low-confidence `incomplete` with explicit legacy
+evidence, so it cannot conflict with an evidence-backed structured detection.
+
 The Core does not inspect RPG Maker-specific files directly. Those checks are
 owned by engine plugins.

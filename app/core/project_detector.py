@@ -29,6 +29,7 @@ class ProjectDetector:
             )
 
         detected_results: list[DetectionResult] = []
+        incomplete_results: list[DetectionResult] = []
         for plugin in self._plugin_loader.load_registered_plugins():
             try:
                 result = plugin.detect_project(candidate_path)
@@ -44,8 +45,23 @@ class ProjectDetector:
                 )
             if result.status == DetectionStatus.DETECTED:
                 detected_results.append(result)
+            elif result.status == DetectionStatus.INCOMPLETE:
+                incomplete_results.append(result)
 
         if not detected_results:
+            if len(incomplete_results) == 1:
+                return incomplete_results[0]
+            if incomplete_results:
+                return DetectionResult(
+                    status=DetectionStatus.INCOMPLETE,
+                    project_path=candidate_path,
+                    confidence=ConfidenceLevel.LOW,
+                    reason=(
+                        "Multiple plugins found partial engine evidence, "
+                        "but no engine was confirmed."
+                    ),
+                    conflicts=tuple(incomplete_results),
+                )
             return DetectionResult(
                 status=DetectionStatus.UNKNOWN,
                 project_path=candidate_path,
