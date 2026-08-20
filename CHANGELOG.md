@@ -10,6 +10,9 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 
 ### Added
 
+- Sprint 0.2 engine detection models and project detection pipeline.
+- RPG Maker MV read-only detection plugin with version evidence support.
+- Unit tests for valid, unknown, incomplete, conflict, and invalid detection cases.
 - Ongoing improvements under the current sprint.
 - Internal architectural refinements.
 - Documentation updates.

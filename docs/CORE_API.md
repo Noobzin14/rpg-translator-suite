@@ -173,3 +173,30 @@ Autosave
 ↓
 
 Update Translation Memory
+
+---
+
+# Engine Detection API
+
+Sprint 0.2 introduces `ProjectDetector` as the Core entry point for engine
+detection. The Core remains engine-independent: it validates the candidate
+directory, calls plugins through `PluginLoader`, and returns a structured
+`DetectionResult`.
+
+`DetectionResult` contains:
+
+- `status`
+- `engine`
+- `display_name`
+- `version`
+- `project_path`
+- `confidence`
+- `evidence`
+- `reason`
+- `conflicts`
+
+Possible statuses are `detected`, `unknown`, `conflict`, `invalid_path`, and
+`incomplete`.
+
+The Core does not inspect RPG Maker-specific files directly. Those checks are
+owned by engine plugins.

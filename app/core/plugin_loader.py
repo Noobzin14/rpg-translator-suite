@@ -31,9 +31,5 @@ class PluginLoader:
         self._plugin_directory.mkdir(parents=True, exist_ok=True)
 
     def load_registered_plugins(self) -> tuple[BasePlugin, ...]:
-        """Return no plugins because automatic discovery is out of scope.
-
-        Sprint 0.1 only establishes the loading boundary. Discovery and dynamic
-        imports belong to Sprint 0.2.
-        """
-        return ()
+        """Return plugin instances registered in the loader registry."""
+        return self._registry.all_plugins()
