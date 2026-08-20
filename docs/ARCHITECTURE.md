@@ -119,7 +119,10 @@ The Core MUST NOT contain engine-specific code.
 
 # Plugin System
 
-Every supported engine must implement the same interface.
+Every supported engine must implement the same interface. Engine detection is
+confirmed only by structured plugin results; legacy boolean detection is treated
+as partial, low-confidence compatibility evidence and cannot create a conflict
+against a structured detector.
 
 Example:
 

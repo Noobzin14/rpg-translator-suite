@@ -6,7 +6,12 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import ClassVar
 
-from app.core.detection import DetectionResult, DetectionStatus
+from app.core.detection import (
+    ConfidenceLevel,
+    DetectionEvidence,
+    DetectionResult,
+    DetectionStatus,
+)
 
 
 class BasePlugin(ABC):
@@ -36,10 +41,25 @@ class BasePlugin(ABC):
         """
         if self.detect(project_path):
             return DetectionResult(
-                status=DetectionStatus.DETECTED,
+                status=DetectionStatus.INCOMPLETE,
                 project_path=project_path,
                 engine=self.plugin_id,
                 display_name=self.display_name,
+                confidence=ConfidenceLevel.LOW,
+                evidence=(
+                    DetectionEvidence(
+                        path=project_path,
+                        description=(
+                            "Legacy boolean detect() returned True; no "
+                            "structured engine evidence was provided."
+                        ),
+                        confidence_weight=0,
+                    ),
+                ),
+                reason=(
+                    "Legacy boolean detection matched, but structured "
+                    "evidence is required to confirm the engine."
+                ),
             )
 
         return DetectionResult(

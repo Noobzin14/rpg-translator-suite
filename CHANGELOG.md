@@ -19,6 +19,14 @@ The format follows the principles of **Keep a Changelog** and **Semantic Version
 - Unit tests.
 - Plugin infrastructure improvements.
 
+### Fixed
+
+- Clarified Sprint 0.2 detection semantics so legacy boolean `detect()` matches
+  become low-confidence incomplete results instead of unevidenced confirmed
+  detections.
+- Preserved incomplete plugin detection results in the Core project detection
+  flow instead of collapsing them to unknown.
+
 ---
 
 # Version History
