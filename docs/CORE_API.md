@@ -226,11 +226,31 @@ These models are defined in `app.core.project_model` and include:
 - `ProjectIssue`: Represents an issue found during project loading.
 - `ProjectFileKind`: Kinds of file system entries (file, directory, symlink, other).
 - `ProjectFileRole`: Logical roles (root, config, data, script, asset, plugin, metadata, unknown).
+- `ProjectFileSpec`: Specification for a file/directory in a project structure (used by plugins to describe expected structure).
+- `ProjectStructureSpec`: Specification describing the expected/relevant structure of a project.
 - `ProjectFile`: Represents a single file or directory entry.
 - `ProjectStructure`: Represents the structure of a loaded project.
 - `ProjectMetadata`: Engine-independent metadata container.
 - `Project`: Represents a loaded project.
 - `ProjectLoadResult`: Result of attempting to load a project.
+
+## Plugin Structure API (Sprint 0.3)
+
+Plugins can describe the expected structure of projects for their engine using `describe_project_structure()`:
+
+```python
+def describe_project_structure(
+    self,
+    project_path: Path,
+    detection: DetectionResult,
+) -> ProjectStructureSpec:
+    \"\"\"Describe the expected/relevant structure for this engine's projects.\"\"\"
+```
+
+**Responsibilities:**
+
+- **Plugin**: Describes engine-specific structure using generic models (`ProjectFileSpec`, `ProjectStructureSpec`).
+- **Core**: Validates filesystem against the description and transforms it into `Project` (future sprint).
 
 These models remain fully engine-independent. Engine-specific operations such as
 reading files, scanning directories, or extracting metadata are deferred to

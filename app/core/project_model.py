@@ -64,6 +64,52 @@ class ProjectFileRole(str, Enum):
 
 
 @dataclass(frozen=True)
+class ProjectFileSpec:
+    """Specification for a file or directory in a project structure.
+
+    Used by plugins to describe expected/relevant project structure in an
+    engine-independent way. The Core uses these specifications to validate
+    and understand project layouts without knowing engine-specific details.
+
+    Attributes:
+        relative_path: Path relative to the project root.
+        kind: Whether this is a file, directory, symlink, or other.
+        role: Logical role this entry plays in the project.
+        required: Whether this entry is required for a valid project.
+        description: Optional human-readable description of this entry.
+    """
+
+    relative_path: Path
+    kind: ProjectFileKind
+    role: ProjectFileRole
+    required: bool = False
+    description: str | None = None
+
+
+@dataclass(frozen=True)
+class ProjectStructureSpec:
+    """Specification describing the expected/relevant structure of a project.
+
+    Plugins use this to declare what files/directories they expect or consider
+    relevant for a given engine. The Core remains engine-independent by only
+    knowing about these generic specifications.
+
+    Attributes:
+        metadata: Engine-independent metadata key-value pairs.
+        expected_files: Files that are expected to exist in the project.
+        expected_directories: Directories that are expected to exist.
+        relevant_files: Files that are relevant but not required.
+        relevant_directories: Directories that are relevant but not required.
+    """
+
+    metadata: Mapping[str, str | int | float | bool | None] = field(default_factory=dict)
+    expected_files: tuple[ProjectFileSpec, ...] = field(default_factory=tuple)
+    expected_directories: tuple[ProjectFileSpec, ...] = field(default_factory=tuple)
+    relevant_files: tuple[ProjectFileSpec, ...] = field(default_factory=tuple)
+    relevant_directories: tuple[ProjectFileSpec, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
 class ProjectFile:
     """Represents a single file or directory entry in a project."""
 

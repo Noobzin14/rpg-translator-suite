@@ -297,6 +297,37 @@ RPG Maker MV 1.6.1
 
 ---
 
+# Project Structure Description (Sprint 0.3)
+
+Plugins describe the expected/relevant structure of projects for their engine.
+
+**Plugin Responsibility:**
+- Describe engine-specific structure using generic models (`ProjectFileSpec`, `ProjectStructureSpec`).
+- Declare what files/directories are expected or relevant.
+
+**Core Responsibility:**
+- Validate filesystem against the plugin's description (future sprint).
+- Transform validated structure into `Project` model.
+
+**Boundary:**
+- Plugin: "descreve estrutura específica da engine"
+- Core: "valida e transforma essa descrição em Project"
+
+Example (MV plugin declares):
+
+```
+package.json → FILE / CONFIG (required)
+www/ → DIRECTORY / DATA (required)
+www/data/ → DIRECTORY / DATA (required)
+www/data/System.json → FILE / DATA (required)
+www/js/ → DIRECTORY / SCRIPT (required)
+www/js/rpg_core.js → FILE / SCRIPT (relevant)
+```
+
+The Core only knows about `ProjectFileSpec` and `ProjectStructureSpec`, not about MV-specific paths.
+
+---
+
 # Validation Layer
 
 Responsible for:

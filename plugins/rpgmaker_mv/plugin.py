@@ -14,6 +14,12 @@ from app.core.detection import (
     DetectionResult,
     DetectionStatus,
 )
+from app.core.project_model import (
+    ProjectFileKind,
+    ProjectFileRole,
+    ProjectFileSpec,
+    ProjectStructureSpec,
+)
 
 _VERSION_PATTERN = re.compile(r"(?:RPG Maker MV|rpg_core\.js)\s+v?(\d+\.\d+\.\d+)", re.IGNORECASE)
 _SIMPLE_VERSION_PATTERN = re.compile(r"\bv(\d+\.\d+\.\d+)\b")
@@ -122,3 +128,87 @@ class RPGMakerMVPlugin(BasePlugin):
             if match:
                 return match.group(1)
         return None
+
+    def describe_project_structure(
+        self,
+        project_path: Path,
+        detection: DetectionResult,
+    ) -> ProjectStructureSpec:
+        """Describe the expected/relevant structure for RPG Maker MV projects.
+
+        This method declares the characteristic file/directory layout of an
+        RPG Maker MV project using engine-independent models. The Core uses
+        this information to validate and understand MV project layouts without
+        knowing MV-specific details.
+
+        Args:
+            project_path: The candidate project directory path.
+            detection: The detection result for this project.
+
+        Returns:
+            A ProjectStructureSpec describing expected/relevant MV structure.
+        """
+        # Expected files - required for a valid MV project
+        expected_files = (
+            ProjectFileSpec(
+                relative_path=Path("package.json"),
+                kind=ProjectFileKind.FILE,
+                role=ProjectFileRole.CONFIG,
+                required=True,
+                description="Package configuration file referencing rpg_core runtime.",
+            ),
+            ProjectFileSpec(
+                relative_path=Path("www/data/System.json"),
+                kind=ProjectFileKind.FILE,
+                role=ProjectFileRole.DATA,
+                required=True,
+                description="System data file containing game configuration.",
+            ),
+        )
+
+        # Expected directories - required structure
+        expected_directories = (
+            ProjectFileSpec(
+                relative_path=Path("www"),
+                kind=ProjectFileKind.DIRECTORY,
+                role=ProjectFileRole.DATA,
+                required=True,
+                description="Root directory for web assets.",
+            ),
+            ProjectFileSpec(
+                relative_path=Path("www/data"),
+                kind=ProjectFileKind.DIRECTORY,
+                role=ProjectFileRole.DATA,
+                required=True,
+                description="Directory containing game data JSON files.",
+            ),
+            ProjectFileSpec(
+                relative_path=Path("www/js"),
+                kind=ProjectFileKind.DIRECTORY,
+                role=ProjectFileRole.SCRIPT,
+                required=True,
+                description="Directory containing JavaScript runtime files.",
+            ),
+        )
+
+        # Relevant files - useful but not strictly required
+        relevant_files = (
+            ProjectFileSpec(
+                relative_path=Path("www/js/rpg_core.js"),
+                kind=ProjectFileKind.FILE,
+                role=ProjectFileRole.SCRIPT,
+                required=False,
+                description="Main RPG Maker MV runtime library.",
+            ),
+        )
+
+        # Relevant directories - useful but not strictly required
+        relevant_directories: tuple[ProjectFileSpec, ...] = ()
+
+        return ProjectStructureSpec(
+            metadata={},
+            expected_files=expected_files,
+            expected_directories=expected_directories,
+            relevant_files=relevant_files,
+            relevant_directories=relevant_directories,
+        )

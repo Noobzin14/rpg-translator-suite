@@ -1,7 +1,7 @@
 # Plugin API
 ## RPG Translator Suite
 
-Version: 0.1
+Version: 0.3
 
 ---
 
@@ -80,6 +80,91 @@ class BasePlugin:
     def export_project(self):
         pass
 ```
+
+---
+
+# Project Structure Description (Sprint 0.3)
+
+Plugins can describe the expected/relevant structure of projects for their engine using engine-independent models. This allows the Core to understand project layouts without knowing engine-specific details.
+
+## describe_project_structure()
+
+```python
+def describe_project_structure(
+    self,
+    project_path: Path,
+    detection: DetectionResult,
+) -> ProjectStructureSpec:
+    \"\"\"Describe the expected/relevant structure for this engine's projects.
+
+    Plugins may override this method to declare what files and directories
+    they expect or consider relevant for a given engine.
+
+    This method is NOT a project loader. It only describes the expected
+    structure; it does not read files, scan directories, or extract data.
+    \"\"\"
+```
+
+**Responsibilities:**
+
+- **Plugin**: Describes engine-specific structure using generic models (`ProjectFileSpec`, `ProjectStructureSpec`).
+- **Core**: Validates filesystem against the description and transforms it into `Project` (future sprint).
+
+**Default Behavior:**
+
+Plugins that do not override this method return an empty `ProjectStructureSpec`. This maintains compatibility and does not raise errors during normal flows.
+
+---
+
+# ProjectFileSpec
+
+Describes a single file or directory in a project structure.
+
+```python
+@dataclass(frozen=True)
+class ProjectFileSpec:
+    relative_path: Path          # Path relative to project root
+    kind: ProjectFileKind        # FILE, DIRECTORY, SYMLINK, OTHER
+    role: ProjectFileRole        # ROOT, CONFIG, DATA, SCRIPT, ASSET, PLUGIN, METADATA, UNKNOWN
+    required: bool = False       # Whether this entry is required
+    description: str | None = None  # Optional human-readable description
+```
+
+**Example:**
+
+```python
+ProjectFileSpec(
+    relative_path=Path("www/data/System.json"),
+    kind=ProjectFileKind.FILE,
+    role=ProjectFileRole.DATA,
+    required=True,
+    description="System data file containing game configuration.",
+)
+```
+
+---
+
+# ProjectStructureSpec
+
+Describes the complete expected/relevant structure of a project.
+
+```python
+@dataclass(frozen=True)
+class ProjectStructureSpec:
+    metadata: Mapping[str, str | int | float | bool | None]
+    expected_files: tuple[ProjectFileSpec, ...]
+    expected_directories: tuple[ProjectFileSpec, ...]
+    relevant_files: tuple[ProjectFileSpec, ...]
+    relevant_directories: tuple[ProjectFileSpec, ...]
+```
+
+**Fields:**
+
+- `metadata`: Engine-independent key-value pairs (e.g., `engine_family`, `runtime`).
+- `expected_files`: Files that should exist for a valid project.
+- `expected_directories`: Directories that should exist.
+- `relevant_files`: Files that are useful but not required.
+- `relevant_directories`: Directories that are useful but not required.
 
 ---
 
