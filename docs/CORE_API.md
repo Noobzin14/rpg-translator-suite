@@ -176,6 +176,120 @@ Update Translation Memory
 
 ---
 
+# Project Loading API (Sprint 0.3, Stage 3)
+
+Sprint 0.3 Stage 3 introduces `ProjectLoader` as the Core entry point for loading projects.
+The Core remains engine-independent: it orchestrates detection, plugin resolution, and
+generic filesystem validation.
+
+## ProjectLoader
+
+```python
+class ProjectLoader:
+    """Orchestrates project loading by coordinating detection and plugin structure APIs."""
+
+    def __init__(
+        self,
+        detector: ProjectDetector,
+        plugin_manager: PluginManager,
+    ) -> None:
+        """Initialize with detector and plugin manager."""
+
+    def load(self, project_path: Path) -> ProjectLoadResult:
+        """Load a project from the given path."""
+```
+
+## Load Flow
+
+```
+project_path
+    ↓
+Validate path (exists, is directory)
+    ↓
+ProjectDetector.detect()
+    ↓
+DetectionResult
+    ↓
+Handle detection status:
+  - UNKNOWN → UNKNOWN_ENGINE
+  - CONFLICT → ENGINE_CONFLICT
+  - INCOMPLETE → INCOMPLETE
+  - INVALID_PATH → INVALID_PATH
+  - DETECTED → continue
+    ↓
+Resolve plugin via PluginManager.get(engine_id)
+    ↓
+plugin.describe_project_structure(project_path, detection)
+    ↓
+ProjectStructureSpec
+    ↓
+Generic filesystem validation:
+  - Check path safety (no traversal, no absolute paths)
+  - Check symlinks (don't follow outside project)
+  - Check existence
+  - Gather metadata (size, mtime)
+    ↓
+Build ProjectFile entries
+    ↓
+Build ProjectStructure
+    ↓
+Build Project
+    ↓
+ProjectLoadResult
+```
+
+## Detection Status Handling
+
+| DetectionStatus | ProjectLoadStatus | Project | Notes |
+|-----------------|-------------------|---------|-------|
+| `DETECTED` | `LOADED` or `INCOMPLETE` | Yes | Depends on required files present |
+| `UNKNOWN` | `UNKNOWN_ENGINE` | None | Issue: `unknown_engine` |
+| `CONFLICT` | `ENGINE_CONFLICT` | None | Issue: `engine_conflict` |
+| `INCOMPLETE` (no engine) | `INCOMPLETE` | None | Partial evidence only |
+| `INCOMPLETE` (with engine) | `INCOMPLETE` | None | Engine known but project incomplete |
+| `INVALID_PATH` | `INVALID_PATH` | None | Path doesn't exist or not a directory |
+
+## ProjectLoadResult Fields
+
+- `status`: `ProjectLoadStatus` indicating overall result
+- `project`: `Project | None` - the loaded project if successful
+- `warnings`: `tuple[ProjectIssue, ...]` - non-blocking issues
+- `errors`: `tuple[ProjectIssue, ...]` - blocking issues
+- `detection`: `DetectionResult | None` - preserved detection result
+
+## Project Structure Validation
+
+The Core validates `ProjectFileSpec` entries generically:
+
+1. **Path Safety**: Rejects absolute paths and path traversal (`..`)
+2. **Symlinks**: Does not follow symlinks outside project root
+3. **Existence**: Checks if declared files/directories exist
+4. **Metadata**: Gathers size and modification time via `stat()`
+5. **No Content Reading**: Never opens file contents during loading
+
+## Issue Codes
+
+Common issue codes generated during loading:
+
+- `invalid_path`: Path doesn't exist or is not a directory
+- `unknown_engine`: No supported engine detected
+- `engine_conflict`: Multiple engines detected
+- `plugin_not_available`: Detected engine plugin not found
+- `invalid_relative_path`: Spec contains unsafe path
+- `symlink_outside_project`: Required symlink points outside project
+- `symlink_skipped`: Optional symlink points outside project
+- `missing_expected_file`: Required/optional file missing
+- `missing_expected_directory`: Required/optional directory missing
+
+## Status Determination
+
+Project status is `LOADED` when all required files/directories are present.
+Project status is `INCOMPLETE` when any required item is missing.
+
+Optional items missing generate warnings but do not affect status.
+
+---
+
 # Engine Detection API
 
 Sprint 0.2 introduces `ProjectDetector` as the Core entry point for engine

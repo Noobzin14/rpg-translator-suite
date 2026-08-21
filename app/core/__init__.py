@@ -11,6 +11,7 @@ from app.core.detection import (
 from app.core.exceptions import PluginError, PluginRegistrationError, RTSException
 from app.core.logger import configure_logging
 from app.core.plugin_loader import PluginLoader
+from app.core.project_loader import ProjectLoader
 from app.core.project_detector import ProjectDetector
 from app.core.plugin_manager import PluginManager
 from app.core.plugin_registry import PluginRegistry
@@ -40,6 +41,7 @@ __all__ = [
     "DetectionStatus",
     "PluginError",
     "PluginLoader",
+    "ProjectLoader",
     "ProjectDetector",
     "PluginManager",
     "PluginRegistrationError",
