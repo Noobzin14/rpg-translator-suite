@@ -15,6 +15,18 @@ from app.core.project_detector import ProjectDetector
 from app.core.plugin_manager import PluginManager
 from app.core.plugin_registry import PluginRegistry
 from app.core.plugin_state import PluginState
+from app.core.project_model import (
+    Project,
+    ProjectFile,
+    ProjectFileKind,
+    ProjectFileRole,
+    ProjectIssue,
+    ProjectIssueSeverity,
+    ProjectLoadResult,
+    ProjectLoadStatus,
+    ProjectMetadata,
+    ProjectStructure,
+)
 from app.core.version import __version__
 
 __all__ = [
@@ -34,4 +46,14 @@ __all__ = [
     "RTSException",
     "__version__",
     "configure_logging",
+    "Project",
+    "ProjectFile",
+    "ProjectFileKind",
+    "ProjectFileRole",
+    "ProjectIssue",
+    "ProjectIssueSeverity",
+    "ProjectLoadResult",
+    "ProjectLoadStatus",
+    "ProjectMetadata",
+    "ProjectStructure",
 ]

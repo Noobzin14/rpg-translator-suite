@@ -213,3 +213,25 @@ evidence, so it cannot conflict with an evidence-backed structured detection.
 
 The Core does not inspect RPG Maker-specific files directly. Those checks are
 owned by engine plugins.
+
+---
+
+# Project Loading Models
+
+Sprint 0.3 introduces engine-independent models for representing loaded projects.
+These models are defined in `app.core.project_model` and include:
+
+- `ProjectLoadStatus`: Status of a project loading operation.
+- `ProjectIssueSeverity`: Severity levels for project issues.
+- `ProjectIssue`: Represents an issue found during project loading.
+- `ProjectFileKind`: Kinds of file system entries (file, directory, symlink, other).
+- `ProjectFileRole`: Logical roles (root, config, data, script, asset, plugin, metadata, unknown).
+- `ProjectFile`: Represents a single file or directory entry.
+- `ProjectStructure`: Represents the structure of a loaded project.
+- `ProjectMetadata`: Engine-independent metadata container.
+- `Project`: Represents a loaded project.
+- `ProjectLoadResult`: Result of attempting to load a project.
+
+These models remain fully engine-independent. Engine-specific operations such as
+reading files, scanning directories, or extracting metadata are deferred to
+plugins and future sprints.
