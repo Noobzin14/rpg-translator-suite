@@ -20,12 +20,14 @@ from app.core.project_model import (
     ProjectFile,
     ProjectFileKind,
     ProjectFileRole,
+    ProjectFileSpec,
     ProjectIssue,
     ProjectIssueSeverity,
     ProjectLoadResult,
     ProjectLoadStatus,
     ProjectMetadata,
     ProjectStructure,
+    ProjectStructureSpec,
 )
 from app.core.version import __version__
 
@@ -50,10 +52,12 @@ __all__ = [
     "ProjectFile",
     "ProjectFileKind",
     "ProjectFileRole",
+    "ProjectFileSpec",
     "ProjectIssue",
     "ProjectIssueSeverity",
     "ProjectLoadResult",
     "ProjectLoadStatus",
     "ProjectMetadata",
     "ProjectStructure",
+    "ProjectStructureSpec",
 ]
