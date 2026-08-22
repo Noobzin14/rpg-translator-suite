@@ -12,7 +12,8 @@ from app.core.detection import (
     DetectionResult,
     DetectionStatus,
 )
-from app.core.project_model import ProjectStructureSpec
+from app.core.extraction import ExtractionResult
+from app.core.project_model import Project, ProjectStructureSpec
 
 
 class BasePlugin(ABC):
@@ -24,6 +25,9 @@ class BasePlugin(ABC):
 
     Sprint 0.3 adds the ability for plugins to describe expected project structure
     in an engine-independent way via ProjectStructureSpec.
+
+    Sprint 0.3 Stage 5 adds the extract_data method for extracting translatable
+    content from projects in an engine-specific manner.
     """
 
     plugin_id: ClassVar[str]
@@ -104,3 +108,35 @@ class BasePlugin(ABC):
             only knowing about the generic ProjectStructureSpec model.
         """
         return ProjectStructureSpec()
+
+    def extract_data(self, project: Project) -> ExtractionResult:
+        """Extract structured translatable data from a project.
+
+        This method allows plugins to extract text content that may need
+        translation. The Core coordinates extraction through this API while
+        remaining engine-agnostic.
+
+        Plugins that do not yet support data extraction should return an
+        ExtractionResult with status NOT_SUPPORTED instead of raising
+        exceptions.
+
+        Args:
+            project: The loaded project to extract data from.
+
+        Returns:
+            An ExtractionResult containing extracted entries and any issues.
+            The default implementation returns NOT_SUPPORTED to maintain
+            compatibility with plugins that do not yet implement extraction.
+
+        Note:
+            This method extracts data for translation purposes. It does not
+            perform translation itself. Translation is handled in subsequent
+            pipeline stages.
+
+            Plugins should override this method to provide engine-specific
+            extraction logic. The Core remains engine-independent by only
+            knowing about the generic ExtractionResult model.
+        """
+        from app.core.extraction import ExtractionStatus
+
+        return ExtractionResult(status=ExtractionStatus.NOT_SUPPORTED)
