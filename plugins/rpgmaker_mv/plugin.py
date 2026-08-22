@@ -148,6 +148,33 @@ class RPGMakerMVPlugin(BasePlugin):
         Returns:
             A ProjectStructureSpec describing expected/relevant MV structure.
         """
+        # Build metadata from detection result and safe package.json reading
+        metadata: dict[str, str | int | float | bool | None] = {}
+
+        # Use engine information from DetectionResult (no duplication)
+        if detection.display_name:
+            metadata["engine_display_name"] = detection.display_name
+
+        if detection.version:
+            metadata["engine_version"] = detection.version
+
+        # Safely read project_name from package.json if available
+        package_json = project_path / "package.json"
+        if package_json.is_file():
+            try:
+                # Read with size limit for safety (1MB max)
+                content = package_json.read_text(encoding="utf-8")
+                if len(content) > 1024 * 1024:
+                    content = content[:1024 * 1024]
+                data = json.loads(content)
+                if isinstance(data, dict) and "name" in data:
+                    name = data["name"]
+                    if isinstance(name, str):
+                        metadata["project_name"] = name
+            except (OSError, json.JSONDecodeError):
+                # Silently ignore errors - metadata failure should not break structure
+                pass
+
         # Expected files - required for a valid MV project
         expected_files = (
             ProjectFileSpec(
@@ -206,7 +233,7 @@ class RPGMakerMVPlugin(BasePlugin):
         relevant_directories: tuple[ProjectFileSpec, ...] = ()
 
         return ProjectStructureSpec(
-            metadata={},
+            metadata=metadata,
             expected_files=expected_files,
             expected_directories=expected_directories,
             relevant_files=relevant_files,
