@@ -1,4 +1,4 @@
-"""RPG Maker MV engine detection plugin."""
+"""RPG Maker MV engine detection and data extraction plugin."""
 
 from __future__ import annotations
 
@@ -14,7 +14,16 @@ from app.core.detection import (
     DetectionResult,
     DetectionStatus,
 )
+from app.core.extraction import (
+    ExtractionEntry,
+    ExtractionEntryType,
+    ExtractionIssue,
+    ExtractionIssueSeverity,
+    ExtractionResult,
+    ExtractionStatus,
+)
 from app.core.project_model import (
+    Project,
     ProjectFileKind,
     ProjectFileRole,
     ProjectFileSpec,
@@ -238,4 +247,127 @@ class RPGMakerMVPlugin(BasePlugin):
             expected_directories=expected_directories,
             relevant_files=relevant_files,
             relevant_directories=relevant_directories,
+        )
+
+    def extract_data(self, project: Project) -> ExtractionResult:
+        """Extract translatable data from an RPG Maker MV project.
+
+        This implementation performs minimal extraction to demonstrate the API:
+        - Game title from System.json
+        - Project name from package.json
+
+        Full extraction of maps, events, actors, skills, items, etc. is left
+        for future stages.
+
+        Args:
+            project: The loaded RPG Maker MV project.
+
+        Returns:
+            An ExtractionResult containing extracted entries and any issues.
+        """
+        entries: list[ExtractionEntry] = []
+        warnings: list[ExtractionIssue] = []
+        errors: list[ExtractionIssue] = []
+
+        project_path = project.path
+
+        # Extract game title from System.json
+        system_json_path = project_path / "www" / "data" / "System.json"
+        if system_json_path.is_file():
+            try:
+                content = system_json_path.read_text(encoding="utf-8")
+                data = json.loads(content)
+                if isinstance(data, dict) and "gameTitle" in data:
+                    game_title = data["gameTitle"]
+                    if isinstance(game_title, str) and game_title.strip():
+                        entries.append(
+                            ExtractionEntry(
+                                entry_id="system:game_title",
+                                entry_type=ExtractionEntryType.NAME,
+                                text=game_title,
+                                source_path=Path("www/data/System.json"),
+                                metadata={"source_kind": "system", "field": "gameTitle"},
+                            )
+                        )
+            except json.JSONDecodeError as exc:
+                errors.append(
+                    ExtractionIssue(
+                        severity=ExtractionIssueSeverity.ERROR,
+                        code="invalid_json",
+                        message=f"Failed to parse System.json: {exc}",
+                        path=Path("www/data/System.json"),
+                    )
+                )
+            except OSError as exc:
+                errors.append(
+                    ExtractionIssue(
+                        severity=ExtractionIssueSeverity.ERROR,
+                        code="read_error",
+                        message=f"Failed to read System.json: {exc}",
+                        path=Path("www/data/System.json"),
+                    )
+                )
+        else:
+            warnings.append(
+                ExtractionIssue(
+                    severity=ExtractionIssueSeverity.WARNING,
+                    code="missing_file",
+                    message="System.json not found; game title cannot be extracted.",
+                    path=Path("www/data/System.json"),
+                )
+            )
+
+        # Extract project name from package.json (if available in metadata)
+        package_json_path = project_path / "package.json"
+        if package_json_path.is_file():
+            try:
+                content = package_json_path.read_text(encoding="utf-8")
+                # Size limit for safety (1MB max)
+                if len(content) > 1024 * 1024:
+                    content = content[: 1024 * 1024]
+                data = json.loads(content)
+                if isinstance(data, dict) and "name" in data:
+                    project_name = data["name"]
+                    if isinstance(project_name, str) and project_name.strip():
+                        entries.append(
+                            ExtractionEntry(
+                                entry_id="system:project_name",
+                                entry_type=ExtractionEntryType.NAME,
+                                text=project_name,
+                                source_path=Path("package.json"),
+                                metadata={"source_kind": "config", "field": "name"},
+                            )
+                        )
+            except json.JSONDecodeError as exc:
+                warnings.append(
+                    ExtractionIssue(
+                        severity=ExtractionIssueSeverity.WARNING,
+                        code="invalid_json",
+                        message=f"Failed to parse package.json: {exc}",
+                        path=Path("package.json"),
+                    )
+                )
+            except OSError as exc:
+                warnings.append(
+                    ExtractionIssue(
+                        severity=ExtractionIssueSeverity.WARNING,
+                        code="read_error",
+                        message=f"Failed to read package.json: {exc}",
+                        path=Path("package.json"),
+                    )
+                )
+
+        # Determine status based on results
+        if errors:
+            status = ExtractionStatus.READ_ERROR if not entries else ExtractionStatus.PARTIAL
+        elif entries:
+            status = ExtractionStatus.EXTRACTED
+        else:
+            status = ExtractionStatus.PARTIAL
+
+        return ExtractionResult(
+            status=status,
+            entries=tuple(entries),
+            warnings=tuple(warnings),
+            errors=tuple(errors),
         )
