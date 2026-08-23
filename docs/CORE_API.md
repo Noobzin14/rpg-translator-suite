@@ -290,6 +290,157 @@ Optional items missing generate warnings but do not affect status.
 
 ---
 
+# Translation Pipeline API (Sprint 0.4, Stage 2)
+
+Sprint 0.4 Stage 2 introduces the Translation Pipeline API as the Core entry point for translating extracted text entries. The Core remains engine-independent: it orchestrates validation, calls translator implementations through an abstract interface, and returns structured results.
+
+## TranslationEntry
+
+```python
+@dataclass(frozen=True)
+class TranslationEntry:
+    \"\"\"Represents a single text entry ready for translation.\"\"\"
+    
+    id: str                              # Stable identifier
+    original_text: str                   # Text to translate (preserved exactly)
+    context: str | None = None           # Optional context
+    metadata: dict[...] = field(default_factory=dict)
+    source_file: Path | None = None      # Optional source file path
+    
+    @classmethod
+    def from_extraction_entry(cls, entry: ExtractionEntry) -> TranslationEntry:
+        \"\"\"Create from an ExtractionEntry.\"\"\"
+```
+
+## Translator Interface
+
+```python
+class Translator(ABC):
+    \"\"\"Abstract base class for translation engines.\"\"\"
+    
+    @property
+    @abstractmethod
+    def translator_id(self) -> str:
+        \"\"\"Unique identifier (e.g., 'qwen', 'openai', 'manual').\"\"\"
+    
+    @abstractmethod
+    def translate(self, entry: TranslationEntry) -> TranslationResult:
+        \"\"\"Translate a single entry.\"\"\"
+```
+
+**Note:** Concrete translator implementations (QwenTranslator, OpenAITranslator, etc.) are NOT part of the Core. They belong in separate modules/plugins.
+
+## TranslationResult
+
+```python
+@dataclass(frozen=True)
+class TranslationResult:
+    \"\"\"Result of translating a single entry.\"\"\"
+    
+    entry_id: str
+    status: TranslationStatus
+    original_text: str              # Preserved exactly as received
+    translated_text: str | None     # None if not translated
+    translator: str | None          # Translator identifier
+    issues: tuple[TranslationIssue, ...]
+```
+
+## TranslationStatus
+
+```python
+class TranslationStatus(str, Enum):
+    PENDING = "pending"         # Not processed yet
+    TRANSLATED = "translated"   # Valid translation exists
+    SKIPPED = "skipped"         # Deliberately ignored
+    FAILED = "failed"           # Translation attempt failed
+    INVALID = "invalid"         # Structurally invalid entry
+```
+
+## TranslationIssue
+
+```python
+@dataclass(frozen=True)
+class TranslationIssue:
+    \"\"\"Represents an issue found during translation.\"\"\"
+    
+    severity: TranslationIssueSeverity
+    code: str                    # e.g., 'empty_source', 'translator_failed'
+    message: str
+    entry_id: str | None = None
+    source_file: Path | None = None
+```
+
+## TranslationIssueSeverity
+
+```python
+class TranslationIssueSeverity(str, Enum):
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+```
+
+## TranslationBatchResult
+
+```python
+@dataclass(frozen=True)
+class TranslationBatchResult:
+    \"\"\"Aggregated result of translating multiple entries.\"\"\"
+    
+    results: tuple[TranslationResult, ...]
+    issues: tuple[TranslationIssue, ...] = ()
+```
+
+## TranslationPipeline
+
+```python
+class TranslationPipeline:
+    \"\"\"Orchestrates translation of multiple entries.\"\"\"
+    
+    def __init__(self, translator: Translator) -> None:
+        \"\"\"Initialize with a translator implementation.\"\"\"
+    
+    def translate(
+        self,
+        entries: Sequence[TranslationEntry],
+    ) -> TranslationBatchResult:
+        \"\"\"Translate a batch of entries.\"\"\"
+```
+
+## Translation Flow
+
+```
+ExtractionResult
+    ↓
+TranslationEntry (from ExtractionEntry)
+    ↓
+TranslationPipeline
+    ↓
+Translator.translate()
+    ↓
+TranslationResult
+    ↓
+TranslationBatchResult
+```
+
+## Pipeline Behavior
+
+- **Validation**: Entries with empty `id` or empty `original_text` are marked as `INVALID`
+- **Error Isolation**: A failure in one entry does not stop processing of others
+- **Exception Handling**: Translator exceptions are caught and converted to `FAILED` status with `translator_failed` issue
+- **Text Preservation**: `original_text` is never modified (no trimming, normalization, or placeholder parsing)
+- **Status Propagation**: `SKIPPED` and `FAILED` statuses from translators are preserved
+
+## Issue Codes
+
+Common issue codes generated during translation:
+
+- `empty_source`: Original text is empty (WARNING severity)
+- `invalid_entry`: Entry ID is empty or whitespace-only (ERROR severity)
+- `translator_failed`: Translator raised an exception (ERROR severity)
+- `translator_skipped`: Translator chose to skip the entry (INFO severity)
+
+---
+
 # Engine Detection API
 
 Sprint 0.2 introduces `ProjectDetector` as the Core entry point for engine

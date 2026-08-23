@@ -30,6 +30,16 @@ from app.core.project_model import (
     ProjectStructure,
     ProjectStructureSpec,
 )
+from app.core.translation import (
+    TranslationBatchResult,
+    TranslationEntry,
+    TranslationIssue,
+    TranslationIssueSeverity,
+    TranslationResult,
+    TranslationStatus,
+    Translator,
+)
+from app.core.translation_pipeline import TranslationPipeline
 from app.core.version import __version__
 
 __all__ = [
@@ -62,4 +72,13 @@ __all__ = [
     "ProjectMetadata",
     "ProjectStructure",
     "ProjectStructureSpec",
+    # Translation pipeline API
+    "TranslationBatchResult",
+    "TranslationEntry",
+    "TranslationIssue",
+    "TranslationIssueSeverity",
+    "TranslationPipeline",
+    "TranslationResult",
+    "TranslationStatus",
+    "Translator",
 ]
