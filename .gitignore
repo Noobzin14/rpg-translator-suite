@@ -1,11 +1,9 @@
 ```
-# Python compiled files
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Distribution / packaging
+*.py[cod]
+*$py.class
+*.so
 .Python
 build/
 develop-eggs/
@@ -23,27 +21,14 @@ wheels/
 .installed.cfg
 *.egg
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-coverage/
-
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# Logs
-*.log
 
 # Environment
 .env
 .env.local
-*.env.*
-
-# OS
-.DS_Store
-Thumbs.db
+.env.*
+.venv/
+venv/
 ```
