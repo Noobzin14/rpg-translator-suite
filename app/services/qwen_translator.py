@@ -8,6 +8,9 @@ Configuration is done via environment variables or explicit parameters:
 - QWEN_BASE_URL: Base URL for the API endpoint (optional, defaults to a generic endpoint)
 - QWEN_MODEL: Model identifier to use (optional, defaults to "qwen-coder-plus")
 - QWEN_TIMEOUT: Request timeout in seconds (optional, defaults to 30)
+- QWEN_MAX_RETRIES: Maximum number of retry attempts (optional, defaults to 3)
+- QWEN_RETRY_BACKOFF: Backoff multiplier for retries (optional, defaults to 2.0)
+- QWEN_RATE_LIMIT: Maximum requests per minute (optional, defaults to 60)
 
 This adapter belongs to the services layer, NOT the core.
 The core remains engine-independent and knows nothing about this implementation.
@@ -16,6 +19,7 @@ The core remains engine-independent and knows nothing about this implementation.
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -40,12 +44,18 @@ class QwenTranslatorConfig:
         base_url: The base URL for the API endpoint.
         model: The model identifier to use for translations.
         timeout: Request timeout in seconds.
+        max_retries: Maximum number of retry attempts for transient errors.
+        retry_backoff: Backoff multiplier for exponential backoff.
+        rate_limit: Maximum requests per minute (rate limiting).
     """
 
     api_key: str
     base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     model: str = "qwen-coder-plus"
     timeout: float = 30.0
+    max_retries: int = 3
+    retry_backoff: float = 2.0
+    rate_limit: int = 60  # requests per minute
 
     @classmethod
     def from_env(cls) -> QwenTranslatorConfig:
@@ -56,6 +66,9 @@ class QwenTranslatorConfig:
         - QWEN_BASE_URL: Optional. Defaults to DashScope compatible endpoint.
         - QWEN_MODEL: Optional. Defaults to "qwen-coder-plus".
         - QWEN_TIMEOUT: Optional. Defaults to 30.0 seconds.
+        - QWEN_MAX_RETRIES: Optional. Defaults to 3.
+        - QWEN_RETRY_BACKOFF: Optional. Defaults to 2.0.
+        - QWEN_RATE_LIMIT: Optional. Defaults to 60 requests per minute.
 
         Returns:
             A QwenTranslatorConfig instance.
@@ -73,17 +86,38 @@ class QwenTranslatorConfig:
         base_url = os.environ.get("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
         model = os.environ.get("QWEN_MODEL", "qwen-coder-plus")
         timeout_str = os.environ.get("QWEN_TIMEOUT", "30.0")
+        max_retries_str = os.environ.get("QWEN_MAX_RETRIES", "3")
+        retry_backoff_str = os.environ.get("QWEN_RETRY_BACKOFF", "2.0")
+        rate_limit_str = os.environ.get("QWEN_RATE_LIMIT", "60")
 
         try:
             timeout = float(timeout_str)
         except ValueError:
             timeout = 30.0
 
+        try:
+            max_retries = int(max_retries_str)
+        except ValueError:
+            max_retries = 3
+
+        try:
+            retry_backoff = float(retry_backoff_str)
+        except ValueError:
+            retry_backoff = 2.0
+
+        try:
+            rate_limit = int(rate_limit_str)
+        except ValueError:
+            rate_limit = 60
+
         return cls(
             api_key=api_key,
             base_url=base_url,
             model=model,
             timeout=timeout,
+            max_retries=max_retries,
+            retry_backoff=retry_backoff,
+            rate_limit=rate_limit,
         )
 
 
@@ -94,8 +128,29 @@ class QwenTranslator(Translator):
     using the OpenAI Chat Completions format. It handles:
     - Configuration via environment variables or explicit parameters
     - HTTP communication with proper error handling
+    - Retry with exponential backoff for transient errors
+    - Rate limiting to avoid API throttling
     - Conversion of API responses to TranslationResult
     - Proper error classification and issue reporting
+
+    Retry policy:
+    - Retries are performed for transient errors only:
+      - HTTP 5xx (server errors)
+      - HTTP 429 (rate limit, respects Retry-After header)
+      - Timeout exceptions
+      - Connection errors
+    - No retry for permanent errors:
+      - HTTP 401 (authentication failed)
+      - HTTP 403 (forbidden)
+      - HTTP 404 (not found)
+      - Invalid request format
+    - Maximum retries: configured via max_retries (default: 3)
+    - Backoff: exponential with base * (multiplier ^ attempt)
+
+    Rate limiting:
+    - Tracks request timestamps
+    - Enforces maximum requests per minute
+    - Waits if rate limit would be exceeded
 
     Security considerations:
     - API key is never logged or included in error messages
@@ -160,6 +215,9 @@ class QwenTranslator(Translator):
 
         self._config = config
         self._client = httpx.Client(timeout=self._config.timeout)
+        
+        # Rate limiting: track request timestamps
+        self._request_timestamps: list[float] = []
 
     def __del__(self) -> None:
         """Cleanup HTTP client on destruction."""
@@ -192,7 +250,12 @@ class QwenTranslator(Translator):
             - The original entry is not modified.
             - API key is never exposed in errors or logs.
             - HTTP errors are converted to FAILED status with appropriate issues.
+            - Retry with exponential backoff for transient errors.
+            - Rate limiting is applied before each request.
         """
+        # Apply rate limiting before making the request
+        self._enforce_rate_limit()
+        
         # Build the prompt for translation
         system_prompt = (
             "You are a professional translator. Translate the following text "
@@ -232,121 +295,8 @@ class QwenTranslator(Translator):
             "Content-Type": "application/json",
         }
 
-        try:
-            response = self._client.post(
-                f"{self._config.base_url}/chat/completions",
-                headers=headers,
-                json=request_body,
-            )
-
-            # Handle HTTP errors
-            if response.status_code >= 500:
-                return self._create_failed_result(
-                    entry,
-                    "api_server_error",
-                    f"API server error (HTTP {response.status_code}). Please try again later.",
-                )
-
-            if response.status_code == 429:
-                return self._create_failed_result(
-                    entry,
-                    "rate_limit_exceeded",
-                    "Rate limit exceeded. Please wait before making more requests.",
-                )
-
-            if response.status_code == 401:
-                return self._create_failed_result(
-                    entry,
-                    "authentication_failed",
-                    "Authentication failed. Please check your API key configuration.",
-                )
-
-            if response.status_code == 403:
-                return self._create_failed_result(
-                    entry,
-                    "access_forbidden",
-                    "Access forbidden. Your API key may not have permission for this operation.",
-                )
-
-            if response.status_code == 404:
-                return self._create_failed_result(
-                    entry,
-                    "endpoint_not_found",
-                    "API endpoint not found. Please check your base URL configuration.",
-                )
-
-            if response.status_code >= 400:
-                return self._create_failed_result(
-                    entry,
-                    "api_client_error",
-                    f"API request failed (HTTP {response.status_code}).",
-                )
-
-            # Parse response
-            try:
-                response_data = response.json()
-            except ValueError:
-                return self._create_failed_result(
-                    entry,
-                    "invalid_response_format",
-                    "Received invalid JSON response from API.",
-                )
-
-            # Extract translated text
-            translated_text = self._extract_translated_text(response_data)
-
-            if translated_text is None:
-                return self._create_failed_result(
-                    entry,
-                    "empty_translation",
-                    "API returned no translation text.",
-                )
-
-            if not translated_text.strip():
-                return self._create_failed_result(
-                    entry,
-                    "empty_translation",
-                    "API returned empty translation text.",
-                )
-
-            # Success
-            return TranslationResult(
-                entry_id=entry.id,
-                status=TranslationStatus.TRANSLATED,
-                original_text=entry.original_text,
-                translated_text=translated_text,
-                translator=self.translator_id,
-            )
-
-        except httpx.TimeoutException:
-            return self._create_failed_result(
-                entry,
-                "request_timeout",
-                f"Request timed out after {self._config.timeout} seconds.",
-            )
-
-        except httpx.ConnectError:
-            return self._create_failed_result(
-                entry,
-                "connection_failed",
-                "Failed to connect to the API. Please check your network connection and base URL.",
-            )
-
-        except httpx.RequestError as exc:
-            # Generic request error - don't expose internal details
-            return self._create_failed_result(
-                entry,
-                "request_failed",
-                "Request failed due to a network error.",
-            )
-
-        except Exception as exc:
-            # Unexpected error
-            return self._create_failed_result(
-                entry,
-                "unexpected_error",
-                f"An unexpected error occurred: {type(exc).__name__}",
-            )
+        # Execute with retry logic
+        return self._execute_with_retry(entry, headers, request_body)
 
     def _extract_translated_text(self, response_data: dict[str, Any]) -> str | None:
         """Extract translated text from API response.
@@ -433,3 +383,229 @@ def dataclass_replace(dc: Any, **kwargs: Any) -> Any:
     changes = {field.name: getattr(dc, field.name) for field in dataclasses.fields(dc)}
     changes.update(kwargs)
     return type(dc)(**changes)
+
+    def _enforce_rate_limit(self) -> None:
+        """Enforce rate limiting by waiting if necessary.
+        
+        This method ensures that no more than config.rate_limit requests
+        are made per minute by tracking request timestamps and waiting
+        when the limit would be exceeded.
+        """
+        now = time.time()
+        window_start = now - 60.0  # 1-minute sliding window
+        
+        # Remove timestamps outside the current window
+        self._request_timestamps = [
+            ts for ts in self._request_timestamps 
+            if ts > window_start
+        ]
+        
+        # Check if we've hit the rate limit
+        if len(self._request_timestamps) >= self._config.rate_limit:
+            # Calculate how long to wait until oldest request expires
+            oldest = min(self._request_timestamps)
+            wait_time = (oldest + 60.0) - now
+            if wait_time > 0:
+                time.sleep(wait_time)
+                # Clean up again after waiting
+                now = time.time()
+                window_start = now - 60.0
+                self._request_timestamps = [
+                    ts for ts in self._request_timestamps 
+                    if ts > window_start
+                ]
+        
+        # Record this request
+        self._request_timestamps.append(time.time())
+
+    def _execute_with_retry(
+        self,
+        entry: TranslationEntry,
+        headers: dict[str, str],
+        request_body: dict[str, Any],
+    ) -> TranslationResult:
+        """Execute API request with retry logic for transient errors.
+        
+        Args:
+            entry: The translation entry.
+            headers: HTTP headers for the request.
+            request_body: Request body dictionary.
+            
+        Returns:
+            TranslationResult with success or failure information.
+        """
+        last_error_result: TranslationResult | None = None
+        
+        for attempt in range(self._config.max_retries + 1):
+            try:
+                response = self._client.post(
+                    f"{self._config.base_url}/chat/completions",
+                    headers=headers,
+                    json=request_body,
+                )
+                
+                # Handle HTTP errors
+                if response.status_code >= 500:
+                    # Server error - retryable
+                    if attempt < self._config.max_retries:
+                        self._wait_for_retry(attempt, response.headers)
+                        continue
+                    return self._create_failed_result(
+                        entry,
+                        "api_server_error",
+                        f"API server error (HTTP {response.status_code}). Please try again later.",
+                    )
+                
+                if response.status_code == 429:
+                    # Rate limit - always retry with Retry-After if available
+                    if attempt < self._config.max_retries:
+                        retry_after = response.headers.get("Retry-After")
+                        self._wait_for_retry(attempt, response.headers, retry_after)
+                        continue
+                    return self._create_failed_result(
+                        entry,
+                        "rate_limit_exceeded",
+                        "Rate limit exceeded. Please wait before making more requests.",
+                    )
+                
+                # Permanent errors - do not retry
+                if response.status_code == 401:
+                    return self._create_failed_result(
+                        entry,
+                        "authentication_failed",
+                        "Authentication failed. Please check your API key configuration.",
+                    )
+                
+                if response.status_code == 403:
+                    return self._create_failed_result(
+                        entry,
+                        "access_forbidden",
+                        "Access forbidden. Your API key may not have permission for this operation.",
+                    )
+                
+                if response.status_code == 404:
+                    return self._create_failed_result(
+                        entry,
+                        "endpoint_not_found",
+                        "API endpoint not found. Please check your base URL configuration.",
+                    )
+                
+                if response.status_code >= 400:
+                    return self._create_failed_result(
+                        entry,
+                        "api_client_error",
+                        f"API request failed (HTTP {response.status_code}).",
+                    )
+                
+                # Parse response
+                try:
+                    response_data = response.json()
+                except ValueError:
+                    return self._create_failed_result(
+                        entry,
+                        "invalid_response_format",
+                        "Received invalid JSON response from API.",
+                    )
+                
+                # Extract translated text
+                translated_text = self._extract_translated_text(response_data)
+                
+                if translated_text is None:
+                    return self._create_failed_result(
+                        entry,
+                        "empty_translation",
+                        "API returned no translation text.",
+                    )
+                
+                if not translated_text.strip():
+                    return self._create_failed_result(
+                        entry,
+                        "empty_translation",
+                        "API returned empty translation text.",
+                    )
+                
+                # Success - record the request timestamp for rate limiting
+                self._request_timestamps.append(time.time())
+                
+                return TranslationResult(
+                    entry_id=entry.id,
+                    status=TranslationStatus.TRANSLATED,
+                    original_text=entry.original_text,
+                    translated_text=translated_text,
+                    translator=self.translator_id,
+                )
+                
+            except httpx.TimeoutException:
+                if attempt < self._config.max_retries:
+                    self._wait_for_retry(attempt)
+                    continue
+                return self._create_failed_result(
+                    entry,
+                    "request_timeout",
+                    f"Request timed out after {self._config.timeout} seconds.",
+                )
+                
+            except httpx.ConnectError:
+                if attempt < self._config.max_retries:
+                    self._wait_for_retry(attempt)
+                    continue
+                return self._create_failed_result(
+                    entry,
+                    "connection_failed",
+                    "Failed to connect to the API. Please check your network connection and base URL.",
+                )
+                
+            except httpx.RequestError as exc:
+                if attempt < self._config.max_retries:
+                    self._wait_for_retry(attempt)
+                    continue
+                return self._create_failed_result(
+                    entry,
+                    "request_failed",
+                    "Request failed due to a network error.",
+                )
+                
+            except Exception as exc:
+                if attempt < self._config.max_retries:
+                    self._wait_for_retry(attempt)
+                    continue
+                return self._create_failed_result(
+                    entry,
+                    "unexpected_error",
+                    f"An unexpected error occurred: {type(exc).__name__}",
+                )
+        
+        # Should not reach here, but just in case
+        if last_error_result:
+            return last_error_result
+        return self._create_failed_result(
+            entry,
+            "max_retries_exceeded",
+            f"Maximum retries ({self._config.max_retries}) exceeded.",
+        )
+
+    def _wait_for_retry(
+        self,
+        attempt: int,
+        response_headers: httpx.Headers | None = None,
+        retry_after: str | None = None,
+    ) -> None:
+        """Wait before retrying using exponential backoff.
+        
+        Args:
+            attempt: Current attempt number (0-indexed).
+            response_headers: Optional HTTP response headers.
+            retry_after: Optional Retry-After header value.
+        """
+        # If Retry-After header is present, use it
+        if retry_after:
+            try:
+                wait_time = float(retry_after)
+                time.sleep(wait_time)
+                return
+            except (ValueError, TypeError):
+                pass  # Fall through to exponential backoff
+        
+        # Exponential backoff: base * (multiplier ^ attempt)
+        wait_time = 1.0 * (self._config.retry_backoff ** attempt)
+        time.sleep(wait_time)

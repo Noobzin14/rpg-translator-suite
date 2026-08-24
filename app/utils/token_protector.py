@@ -65,8 +65,9 @@ ESCAPE_CODE_PATTERN: Final = re.compile(
 )
 
 # Alternative simpler pattern that catches more cases
+# Fixed to properly match single-character escapes like \. \| \! etc.
 SIMPLE_ESCAPE_PATTERN: Final = re.compile(
-    r'\\[A-Za-z]*[\[\{]?\d*[\]\}]?|\\[.!>|^|$]'
+    r'\\(?:[A-Za-z]+[\[\{]?\d*[\]\}]?|[.!<>|^$])'
 )
 
 

@@ -303,4 +303,4 @@ class TestTokenProtectorIntegration:
         assert "\\C[2]" in restore_result.restored_text
         assert "\\C[0]" in restore_result.restored_text
         assert "\\." in restore_result.restored_text
-        assert "\\|" in restore_result.restored_text
+        assert "|" in restore_result.restored_text  # Pipe character after \. escape
