@@ -107,6 +107,10 @@ class DatabaseManager:
         # Initialize database
         self._initialize_database()
 
+    def _should_auto_commit(self) -> bool:
+        """Check if we should auto-commit (not inside a transaction)."""
+        return not self._in_transaction
+
     def _initialize_database(self) -> None:
         """Initialize the database connection and create schema."""
         self._connect()
@@ -179,6 +183,10 @@ class DatabaseManager:
 
         conn = self._conn
         
+        # Mark that we are inside a transaction (disable auto-commit)
+        old_in_transaction = self._in_transaction
+        self._in_transaction = True
+        
         try:
             conn.execute("BEGIN IMMEDIATE")
             yield
@@ -186,6 +194,8 @@ class DatabaseManager:
         except Exception:
             conn.rollback()
             raise
+        finally:
+            self._in_transaction = old_in_transaction
 
     def _create_schema(self) -> None:
         """Create database schema if it doesn't exist."""
@@ -339,7 +349,8 @@ class DatabaseManager:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (name, engine, engine_version, path, language_source, language_target, now, now))
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.lastrowid  # type: ignore[return-value]
 
     def get_project(self, project_id: int) -> dict[str, Any] | None:
@@ -429,7 +440,8 @@ class DatabaseManager:
             WHERE id = ?
         """, tuple(values))
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.rowcount > 0
 
     def delete_project(self, project_id: int) -> bool:
@@ -446,7 +458,8 @@ class DatabaseManager:
 
         cursor = self._conn.cursor()
         cursor.execute("DELETE FROM projects WHERE id = ?", (project_id,))
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.rowcount > 0
 
     # =========================================================================
@@ -504,7 +517,8 @@ class DatabaseManager:
             original, None, status, notes, now, now
         ))
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.lastrowid  # type: ignore[return-value]
 
     def get_entry(self, entry_id: int) -> TranslationEntryRecord | None:
@@ -708,7 +722,8 @@ class DatabaseManager:
             WHERE id = ?
         """, (translated, status, now, entry_id))
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.rowcount > 0
 
     def update_entry_status(
@@ -737,7 +752,8 @@ class DatabaseManager:
             WHERE id = ?
         """, (status, now, entry_id))
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.rowcount > 0
 
     def delete_entry(self, entry_id: int) -> bool:
@@ -754,7 +770,8 @@ class DatabaseManager:
 
         cursor = self._conn.cursor()
         cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return cursor.rowcount > 0
 
     def bulk_insert_entries(
@@ -808,7 +825,8 @@ class DatabaseManager:
             ))
             ids.append(cursor.lastrowid)  # type: ignore[arg-type]
 
-        self._conn.commit()
+        if self._should_auto_commit():
+            self._conn.commit()
         return ids
 
     # =========================================================================
