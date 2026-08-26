@@ -172,6 +172,32 @@ class TestTokenProtectorRestoration:
         is_valid, issues = protector.validate_translation(protect_result, translated)
         assert not is_valid
 
+    def test_placeholder_exact_duplication(self, protector):
+        """Test detection of exact placeholder duplication in translation.
+        
+        This test verifies that when a translation incorrectly duplicates
+        a placeholder (e.g., "Hello PLACEHOLDER_0 PLACEHOLDER_0" instead of
+        "Hello PLACEHOLDER_0"), the validation correctly rejects it.
+        """
+        original = "Olá \\N[1]"
+        protect_result = protector.protect(original)
+        
+        # Simulate translation that duplicates the placeholder incorrectly
+        # Instead of "Hello __TOKEN_0__", translator produced "Hello __TOKEN_0__ __TOKEN_0__"
+        protected = protect_result.protected_text  # e.g., "Olá __TOKEN_0__"
+        # Duplicate the placeholder
+        translated = protected.replace("__TOKEN_0__", "__TOKEN_0__ __TOKEN_0__")
+        
+        # Validation should fail because count mismatch
+        is_valid, issues = protector.validate_translation(protect_result, translated)
+        
+        assert not is_valid, "Validation should reject duplicated placeholder"
+        assert len(issues) > 0, "Should have at least one issue reported"
+        # Issues should mention the problem (count or extra)
+        issue_text = " ".join(issues).lower()
+        assert any(keyword in issue_text for keyword in ["count", "extra", "duplicate", "more"]), \
+            f"Issues should mention duplication: {issues}"
+
     def test_placeholder_altered(self, protector):
         """Test detection of altered placeholder."""
         original = "Hello \\N[1]!"

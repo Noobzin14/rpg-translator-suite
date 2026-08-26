@@ -153,8 +153,8 @@ class TestRPGMakerMVExtraction:
 
         result = mv_plugin.extract_data(project)
         
-        # Should have warning about missing file
-        assert any(w.code == "missing_file" for w in result.warnings)
+        # Should have error about missing file
+        assert any(e.code == "missing_file" for e in result.errors)
 
     def test_extract_invalid_json(self, mv_plugin, tmp_path):
         """Test extraction with invalid JSON file."""
