@@ -362,28 +362,6 @@ class QwenTranslator(Translator):
             issues=(issue,),
         )
 
-
-def dataclass_replace(dc: Any, **kwargs: Any) -> Any:
-    """Replace fields in a frozen dataclass.
-
-    This is a helper function to work around frozen dataclasses.
-
-    Args:
-        dc: The dataclass instance.
-        **kwargs: Field names and new values.
-
-    Returns:
-        A new dataclass instance with replaced fields.
-    """
-    import dataclasses
-
-    if not dataclasses.is_dataclass(dc):
-        raise TypeError("Expected a dataclass instance")
-
-    changes = {field.name: getattr(dc, field.name) for field in dataclasses.fields(dc)}
-    changes.update(kwargs)
-    return type(dc)(**changes)
-
     def _enforce_rate_limit(self) -> None:
         """Enforce rate limiting by waiting if necessary.
         
@@ -609,3 +587,28 @@ def dataclass_replace(dc: Any, **kwargs: Any) -> Any:
         # Exponential backoff: base * (multiplier ^ attempt)
         wait_time = 1.0 * (self._config.retry_backoff ** attempt)
         time.sleep(wait_time)
+
+
+
+def dataclass_replace(dc: Any, **kwargs: Any) -> Any:
+    """Replace fields in a frozen dataclass.
+
+    This is a helper function to work around frozen dataclasses.
+
+    Args:
+        dc: The dataclass instance.
+        **kwargs: Field names and new values.
+
+    Returns:
+        A new dataclass instance with replaced fields.
+    """
+    import dataclasses
+
+    if not dataclasses.is_dataclass(dc):
+        raise TypeError("Expected a dataclass instance")
+
+    changes = {field.name: getattr(dc, field.name) for field in dataclasses.fields(dc)}
+    changes.update(kwargs)
+    return type(dc)(**changes)
+
+
