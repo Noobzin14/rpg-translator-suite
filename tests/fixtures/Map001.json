@@ -1,0 +1,56 @@
+{
+  "displayName": "Mapa001",
+  "events": [
+    {
+      "id": 1,
+      "name": "NPC Guard",
+      "pages": [
+        {
+          "list": [
+            {
+              "code": 101,
+              "indent": 0,
+              "parameters": ["Olá, viajante! Bem-vindo à nossa vila."]
+            },
+            {
+              "code": 401,
+              "indent": 0,
+              "parameters": ["Espero que você tenha uma boa estadia."]
+            },
+            {
+              "code": 0,
+              "indent": 0,
+              "parameters": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Chest",
+      "pages": [
+        {
+          "list": [
+            {
+              "code": 102,
+              "indent": 0,
+              "parameters": [
+                ["Abrir o baú", "Ignorar"],
+                0,
+                0,
+                2,
+                0
+              ]
+            },
+            {
+              "code": 0,
+              "indent": 0,
+              "parameters": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

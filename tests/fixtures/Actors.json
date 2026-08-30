@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Hero",
+    "nickname": "Brave One",
+    "profile": "A courageous hero destined to save the world."
+  },
+  {
+    "id": 2,
+    "name": "Villain",
+    "nickname": "Dark Lord",
+    "profile": "The main antagonist seeking power."
+  }
+]
