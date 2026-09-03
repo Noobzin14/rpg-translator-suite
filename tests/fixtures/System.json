@@ -1,0 +1,16 @@
+{
+  "gameTitle": "Minha Aventura RPG",
+  "terms": {
+    "basic": {
+      "party": "Grupo",
+      "hp": "PV",
+      "mp": "PM"
+    }
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Barco"
+    }
+  ]
+}

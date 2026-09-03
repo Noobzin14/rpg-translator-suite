@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Potion",
+    "description": "Recupera 50 HP."
+  },
+  {
+    "id": 2,
+    "name": "Ether",
+    "description": "Recupera 30 MP."
+  }
+]

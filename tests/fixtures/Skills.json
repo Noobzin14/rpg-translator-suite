@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Fireball",
+    "description": "Deals fire damage to one enemy.",
+    "message1": "casts Fire!",
+    "message2": ""
+  },
+  {
+    "id": 2,
+    "name": "Heal",
+    "description": "Restores HP to one ally.",
+    "message1": "casts Heal!",
+    "message2": "HP restored."
+  }
+]
